@@ -7,23 +7,6 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-export interface ChatProps {
-  mode: ChatMode;
-  webhookUrl?: string;
-  showWelcomeScreen?: boolean;
-  initialMessages?: string[];
-  chatIcon?: string;
-  allowFileUploads?: boolean;
-  // i18n props
-  title?: string;
-  subtitle?: string;
-  footer?: string;
-  getStarted?: string;
-  inputPlaceholder?: string;
-  closeButtonTooltip?: string;
-  helpMessage?: string;
-}
-
 export interface ApiRequestPayload {
   action: 'sendMessage';
   chatInput: string;

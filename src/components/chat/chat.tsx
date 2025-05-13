@@ -1,24 +1,38 @@
 'use client';
 
-import { useState, useRef, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import ReactMarkdown from 'react-markdown';
-import { ChatProps, ChatMessage } from './types';
+import { ChatMessage, ChatMode } from './types';
 import { useChatApi } from './use-chat-api';
-import { Button } from '../ui/button';
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-  CardTitle,
-} from '../ui/card';
-import { Trash, Send, Paperclip } from 'lucide-react';
-import { cn } from '@/utils/ui/utils';
-import Image from 'next/image';
+import { Card } from '../ui/card';
+import { ChatFooter } from '@/components/chat/components/ChatFooter';
+import { WelcomeScreen } from '@/components/chat/components/WelcomeScreen';
+import { ChatHeader } from '@/components/chat/components/ChatHeader';
+import { ChatMessages } from '@/components/chat/components/ChatMessages';
+import { ChatInput } from '@/components/chat/components/ChatInput';
+import { ChatBubble } from '@/components/chat/components/ChatBubble';
+import { ChatWindow } from '@/components/chat/components/ChatWindow';
 
 // Constants
 const MAX_STORED_MESSAGES = 50; // Maximum number of messages to store in localStorage
+
+interface ChatProps {
+  mode: ChatMode;
+  webhookUrl?: string;
+  showWelcomeScreen?: boolean;
+  initialMessages?: string[];
+  chatIcon?: string;
+  allowFileUploads?: boolean;
+  // i18n props
+  title?: string;
+  subtitle?: string;
+  footer?: string;
+  getStarted?: string;
+  inputPlaceholder?: string;
+  closeButtonTooltip?: string;
+  helpMessage?: string;
+  thinkingText?: string;
+}
 
 export default function Chat({
   mode,
@@ -34,8 +48,8 @@ export default function Chat({
   getStarted = 'Get Started',
   inputPlaceholder = 'Ask me...',
   helpMessage = 'How can I assist you today?',
+  thinkingText = 'Thinking...',
 }: ChatProps) {
-  // No longer using toast
   // Use environment webhook if not provided
   const finalWebhookUrl =
     webhookUrl || process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || '';
@@ -46,13 +60,6 @@ export default function Chat({
   // State
   const [chatStarted, setChatStarted] = useState(!showWelcomeScreen);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
-  // Refs
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // API communication
   const { sendMessage, isLoading, error, clearSession, sessionId } =
@@ -123,28 +130,6 @@ export default function Chat({
     }
   }, [messages, chatStarted, finalWebhookUrl]);
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Click outside handler for window mode
-  useEffect(() => {
-    if (mode !== 'window' || isMinimized) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const chatElement = document.getElementById('window-chat');
-      if (chatElement && !chatElement.contains(event.target as Node)) {
-        setIsMinimized(true);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [mode, isMinimized]);
-
   // Handle starting the chat
   const handleStartChat = () => {
     setChatStarted(true);
@@ -174,33 +159,22 @@ export default function Chat({
     }
   };
 
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   // Handle form submission
-  const handleSubmit = async (e?: FormEvent) => {
-    if (e) e.preventDefault();
-
-    if (!inputValue.trim() && selectedFiles.length === 0) return;
+  const handleSubmit = async (inputMessage: string, selectedFiles: File[]) => {
+    if (!inputMessage.trim() && selectedFiles.length === 0) return;
 
     // Add user message to chat
     const userMessage: ChatMessage = {
       id: uuidv4(),
-      content: inputValue,
+      content: inputMessage,
       role: 'user',
       timestamp: new Date().toISOString(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInputValue('');
 
     // Send message to API
-    const response = await sendMessage(inputValue, selectedFiles);
-
-    // Clear selected files
-    setSelectedFiles([]);
+    const response = await sendMessage(inputMessage, selectedFiles);
 
     // Add assistant response to chat if received
     if (response) {
@@ -217,314 +191,71 @@ export default function Chat({
     }
   };
 
-  // Handle file selection
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const filesArray = Array.from(e.target.files);
-      setSelectedFiles(filesArray);
+  // Render chat content (used by both fullscreen and window mode)
+  const renderChatContent = () => {
+    if (showWelcomeScreen && !chatStarted) {
+      return (
+        <WelcomeScreen
+          title={title}
+          subtitle={subtitle}
+          getStartedText={getStarted}
+          onStart={handleStartChat}
+        />
+      );
     }
+
+    return (
+      <>
+        <ChatHeader
+          title={title}
+          chatIcon={chatIcon}
+          onClearChat={clearChatHistory}
+          messagesCount={messages.length}
+        />
+
+        <ChatMessages
+          messages={messages}
+          isLoading={isLoading}
+          helpMessage={helpMessage}
+          chatStarted={chatStarted}
+          thinkingText={thinkingText}
+        />
+
+        <ChatInput
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          inputPlaceholder={inputPlaceholder}
+          allowFileUploads={allowFileUploads}
+        />
+
+        <ChatFooter footer={footer} sessionId={sessionId} />
+      </>
+    );
   };
-
-  // Handle click on file button
-  const handleFileButtonClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  // Format timestamp
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  // Render the welcome screen
-  const renderWelcomeScreen = () => (
-    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-      <h2 className="text-2xl font-bold mb-2">{title}</h2>
-      <p className="text-muted-foreground mb-6">{subtitle}</p>
-      <Button onClick={handleStartChat} className="w-full max-w-xs">
-        {getStarted}
-      </Button>
-    </div>
-  );
-
-  // Render the chat interface
-  const renderChatInterface = () => (
-    <>
-      {/* Chat Header */}
-      <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-2">
-          <div className="bg-white rounded-full flex items-center justify-center w-7 h-7 shadow-sm">
-            <Image src={chatIcon} alt="Chat logo" width="20" height="20" />
-          </div>
-          <CardTitle className="text-lg">{title}</CardTitle>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              if (messages.length > 0) {
-                if (
-                  window.confirm(
-                    'Are you sure you want to clear all messages? This cannot be undone.',
-                  )
-                ) {
-                  clearChatHistory();
-                }
-              } else {
-                // Nothing to clear
-                console.log('No messages to clear');
-              }
-            }}
-            title="Clear chat history"
-            className="hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 transition-colors"
-          >
-            <Trash className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-
-      {/* Messages Area */}
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && chatStarted && (
-          <div className="text-center text-muted-foreground py-6">
-            <p>{helpMessage}</p>
-          </div>
-        )}
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={cn(
-              'flex flex-col max-w-[85%] mb-4',
-              message.role === 'user' ? 'ml-auto' : 'mr-auto',
-            )}
-          >
-            <div
-              className={cn(
-                'rounded-2xl px-4 py-3',
-                message.role === 'user'
-                  ? 'bg-primary text-primary-foreground rounded-br-sm'
-                  : 'bg-muted rounded-bl-sm',
-              )}
-            >
-              {message.role === 'user' ? (
-                message.content
-              ) : (
-                <div className="text-sm [&>p]:my-2 [&>ul]:ml-6 [&>ul]:list-disc [&>ol]:ml-6 [&>ol]:list-decimal [&>ul>li]:mb-1 [&>ol>li]:mb-1 [&>h1]:text-xl [&>h1]:font-bold [&>h1]:my-3 [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:my-2 [&>h3]:font-medium [&>h3]:my-1 [&>blockquote]:border-l-4 [&>blockquote]:border-gray-300 [&>blockquote]:pl-4 [&>blockquote]:italic">
-                  <ReactMarkdown
-                    components={{
-                      code(props: any) {
-                        const { inline, className, children } = props;
-                        const match = /language-(\w+)/.exec(className || '');
-                        return !inline && match ? (
-                          <pre
-                            className={cn(
-                              'bg-gray-100 dark:bg-gray-800 p-3 rounded-md mt-2 overflow-x-auto',
-                              className,
-                            )}
-                          >
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
-                          </pre>
-                        ) : (
-                          <code
-                            className={cn(
-                              'bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono',
-                              className,
-                            )}
-                            {...props}
-                          >
-                            {children}
-                          </code>
-                        );
-                      },
-                      pre(props: any) {
-                        const { children } = props;
-                        return (
-                          <pre className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 p-3 rounded-md mt-2 overflow-x-auto">
-                            {children}
-                          </pre>
-                        );
-                      },
-                    }}
-                    remarkPlugins={[]}
-                  >
-                    {message.content}
-                  </ReactMarkdown>
-                </div>
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground mt-1 self-end">
-              {formatTime(message.timestamp)}
-            </span>
-          </div>
-        ))}
-
-        {/* Typing indicator when loading */}
-        {isLoading && (
-          <div className="flex items-center gap-2 p-3 bg-muted rounded-2xl w-fit">
-            <div className="flex items-center space-x-1">
-              <div
-                className="w-2 h-2 rounded-full bg-current animate-bounce"
-                style={{ animationDelay: '0ms' }}
-              />
-              <div
-                className="w-2 h-2 rounded-full bg-current animate-bounce"
-                style={{ animationDelay: '200ms' }}
-              />
-              <div
-                className="w-2 h-2 rounded-full bg-current animate-bounce"
-                style={{ animationDelay: '400ms' }}
-              />
-            </div>
-            <span className="text-sm text-muted-foreground ml-1">
-              Thinking...
-            </span>
-          </div>
-        )}
-
-        {/* Empty div for scrolling to bottom */}
-        <div ref={messagesEndRef} />
-      </CardContent>
-
-      {/* Input Area */}
-      <CardFooter className="border-t p-4">
-        <form onSubmit={handleSubmit} className="flex items-end gap-2 w-full">
-          {allowFileUploads && (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={handleFileButtonClick}
-                title="Upload file"
-                className="shrink-0"
-              >
-                <Paperclip className="h-4 w-4" />
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                onChange={handleFileSelect}
-                multiple
-              />
-
-              {selectedFiles.length > 0 && (
-                <div className="text-xs text-muted-foreground">
-                  {selectedFiles.length} file(s) selected
-                </div>
-              )}
-            </>
-          )}
-
-          <div className="relative flex-1">
-            <textarea
-              value={inputValue}
-              onChange={(e) => {
-                setInputValue(e.target.value);
-                // Auto-resize the textarea
-                e.target.style.height = 'auto';
-                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
-              placeholder={inputPlaceholder}
-              disabled={isLoading}
-              className="flex w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-9 min-h-9 max-h-32"
-              rows={1}
-              ref={textareaRef}
-            />
-          </div>
-
-          <Button
-            type="submit"
-            size="icon"
-            disabled={
-              isLoading || (!inputValue.trim() && selectedFiles.length === 0)
-            }
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
-      </CardFooter>
-
-      {/* Footer */}
-      <div className="text-xs text-center text-muted-foreground p-2 border-t">
-        {footer}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-1 text-muted-foreground/70">
-            Session ID: {sessionId || 'None'}
-          </div>
-        )}
-      </div>
-    </>
-  );
 
   // For minimized state in window mode
   if (mode === 'window' && isMinimized) {
     return (
-      <div className="fixed bottom-8 right-8 z-50">
-        <Button
-          onClick={() => setIsMinimized(false)}
-          className="p-0 flex items-center gap-3 rounded-full shadow-xl bg-primary text-primary-foreground hover:shadow-2xl transition-all hover:scale-105 border-0"
-          style={{
-            padding: '0.75rem 1.5rem 0.75rem 0.75rem',
-            height: 'auto',
-          }}
-          title="Open chat"
-        >
-          <div className="bg-white rounded-full p-2 flex items-center justify-center w-12 h-12">
-            <Image
-              src={chatIcon}
-              alt="Chat logo"
-              className="w-8 h-8"
-              width={20}
-              height={20}
-            />
-          </div>
-          <span className="text-base font-medium">Chat with AI</span>
-        </Button>
-      </div>
+      <ChatBubble chatIcon={chatIcon} onClick={() => setIsMinimized(false)} />
     );
   }
 
-  // Different render for window mode vs fullscreen
+  // Window mode with chat open
   if (mode === 'window' && !isMinimized) {
     return (
-      <>
-        {/* Overlay to capture clicks outside */}
-        <div
-          className="fixed inset-0 bg-gradient-to-br from-black/10 to-black/30 backdrop-blur-[2px] z-40"
-          onClick={() => setIsMinimized(true)}
-        />
-
-        {/* Floating chat window */}
-        <div
-          className="fixed bottom-8 right-8 z-50 w-full max-w-xl h-[700px] max-h-[85vh]"
-          id="window-chat"
-        >
-          <Card className="flex flex-col h-full overflow-hidden shadow-2xl border-0">
-            {showWelcomeScreen && !chatStarted
-              ? renderWelcomeScreen()
-              : renderChatInterface()}
-          </Card>
-        </div>
-      </>
+      <ChatWindow
+        isOpen={!isMinimized}
+        onClickOutside={() => setIsMinimized(true)}
+      >
+        {renderChatContent()}
+      </ChatWindow>
     );
   }
 
   // Default fullscreen render
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-md w-full">
-      {showWelcomeScreen && !chatStarted
-        ? renderWelcomeScreen()
-        : renderChatInterface()}
+      {renderChatContent()}
     </Card>
   );
 }
