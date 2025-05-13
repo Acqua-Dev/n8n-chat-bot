@@ -13,8 +13,9 @@ import {
   CardFooter,
   CardTitle,
 } from '../ui/card';
-import { Trash, Send, Paperclip, Minimize2, Maximize2 } from 'lucide-react';
+import { Trash, Send, Paperclip } from 'lucide-react';
 import { cn } from '@/utils/ui/utils';
+import Image from 'next/image';
 
 // Constants
 const MAX_STORED_MESSAGES = 50; // Maximum number of messages to store in localStorage
@@ -32,7 +33,6 @@ export default function Chat({
   footer = 'Powered by Acqua',
   getStarted = 'Get Started',
   inputPlaceholder = 'Ask me...',
-  closeButtonTooltip = 'Close chat',
   helpMessage = 'How can I assist you today?',
 }: ChatProps) {
   // No longer using toast
@@ -41,7 +41,7 @@ export default function Chat({
     webhookUrl || process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || '';
 
   // State for minimizing the chat in window mode
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
 
   // State
   const [chatStarted, setChatStarted] = useState(!showWelcomeScreen);
@@ -127,6 +127,23 @@ export default function Chat({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Click outside handler for window mode
+  useEffect(() => {
+    if (mode !== 'window' || isMinimized) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const chatElement = document.getElementById('window-chat');
+      if (chatElement && !chatElement.contains(event.target as Node)) {
+        setIsMinimized(true);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mode, isMinimized]);
 
   // Handle starting the chat
   const handleStartChat = () => {
@@ -237,7 +254,7 @@ export default function Chat({
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
           <div className="bg-white rounded-full flex items-center justify-center w-7 h-7 shadow-sm">
-            <img src={chatIcon} alt="Chat logo" width="20" height="20" />
+            <Image src={chatIcon} alt="Chat logo" width="20" height="20" />
           </div>
           <CardTitle className="text-lg">{title}</CardTitle>
         </div>
@@ -264,22 +281,6 @@ export default function Chat({
           >
             <Trash className="h-4 w-4" />
           </Button>
-
-          {mode === 'window' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMinimized(!isMinimized)}
-              title={isMinimized ? 'Maximize chat' : closeButtonTooltip}
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              {isMinimized ? (
-                <Maximize2 className="h-4 w-4" />
-              ) : (
-                <Minimize2 className="h-4 w-4" />
-              )}
-            </Button>
-          )}
         </div>
       </CardHeader>
 
@@ -468,23 +469,59 @@ export default function Chat({
   // For minimized state in window mode
   if (mode === 'window' && isMinimized) {
     return (
-      <Button
-        onClick={() => setIsMinimized(false)}
-        className="fixed bottom-4 right-4 p-3 rounded-full shadow-lg bg-primary text-white"
-        title="Open chat"
-      >
-        <img src={chatIcon} alt="Chat logo" width="24" height="24" />
-      </Button>
+      <div className="fixed bottom-8 right-8 z-50">
+        <Button
+          onClick={() => setIsMinimized(false)}
+          className="p-0 flex items-center gap-3 rounded-full shadow-xl bg-primary text-primary-foreground hover:shadow-2xl transition-all hover:scale-105 border-0"
+          style={{
+            padding: '0.75rem 1.5rem 0.75rem 0.75rem',
+            height: 'auto',
+          }}
+          title="Open chat"
+        >
+          <div className="bg-white rounded-full p-2 flex items-center justify-center w-12 h-12">
+            <Image
+              src={chatIcon}
+              alt="Chat logo"
+              className="w-8 h-8"
+              width={20}
+              height={20}
+            />
+          </div>
+          <span className="text-base font-medium">Chat with AI</span>
+        </Button>
+      </div>
     );
   }
 
+  // Different render for window mode vs fullscreen
+  if (mode === 'window' && !isMinimized) {
+    return (
+      <>
+        {/* Overlay to capture clicks outside */}
+        <div
+          className="fixed inset-0 bg-gradient-to-br from-black/10 to-black/30 backdrop-blur-[2px] z-40"
+          onClick={() => setIsMinimized(true)}
+        />
+
+        {/* Floating chat window */}
+        <div
+          className="fixed bottom-8 right-8 z-50 w-full max-w-xl h-[700px] max-h-[85vh]"
+          id="window-chat"
+        >
+          <Card className="flex flex-col h-full overflow-hidden shadow-2xl border-0">
+            {showWelcomeScreen && !chatStarted
+              ? renderWelcomeScreen()
+              : renderChatInterface()}
+          </Card>
+        </div>
+      </>
+    );
+  }
+
+  // Default fullscreen render
   return (
-    <Card
-      className={cn(
-        'flex flex-col h-full overflow-hidden shadow-md',
-        mode === 'window' ? 'mx-auto max-w-xl' : 'w-full',
-      )}
-    >
+    <Card className="flex flex-col h-full overflow-hidden shadow-md w-full">
       {showWelcomeScreen && !chatStarted
         ? renderWelcomeScreen()
         : renderChatInterface()}

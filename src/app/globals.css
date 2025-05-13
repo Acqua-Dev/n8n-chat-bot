@@ -144,7 +144,9 @@
 
   /* Chat Interface Colors */
   --chat-water-blue: #001D66;
+  --chat-water-blue-rgb: 0, 29, 102;
   --chat-deep-ocean: #002A5C;
+  --chat-deep-ocean-rgb: 0, 42, 92;
   --chat-sky: #EAEEF8;
   --chat-grey5: #2A3A4D;
   --chat-grey4: #8A99B0;
@@ -228,4 +230,45 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom animations for chat window */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--chat-water-blue-rgb, 0, 29, 102), 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(var(--chat-water-blue-rgb, 0, 29, 102), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--chat-water-blue-rgb, 0, 29, 102), 0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2.5s infinite;
 }

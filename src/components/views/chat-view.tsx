@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Monitor, MessageSquare } from 'lucide-react';
 import { useI18n } from '@/utils/localization/client';
@@ -45,10 +46,18 @@ const Chat = dynamic(() => import('@/components/chat/chat'), {
 
 export default function ChatView() {
   const t = useI18n();
+  const [currentMode, setCurrentMode] = useState<string>('fullscreen');
 
   return (
     <div className="w-full h-full relative">
-      <Tabs defaultValue="fullscreen" className="w-full h-full">
+      <Tabs
+        defaultValue="fullscreen"
+        className="w-full h-full"
+        onValueChange={(value) => {
+          console.log('Tab changing to:', value);
+          setCurrentMode(value);
+        }}
+      >
         <div className="flex justify-end mb-4">
           <TabsList className="bg-[var(--chat-sky)] dark:bg-[var(--chat-deep-ocean)] p-1 rounded-lg shadow-sm">
             <TabsTrigger
@@ -67,19 +76,31 @@ export default function ChatView() {
             </TabsTrigger>
           </TabsList>
         </div>
+
         <TabsContent value="fullscreen" className="h-[calc(100%-60px)]">
           <Chat
+            key="fullscreen-mode"
             mode="fullscreen"
             webhookUrl={process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL}
           />
         </TabsContent>
+
         <TabsContent value="window" className="h-[calc(100%-60px)]">
-          <Chat
-            mode="window"
-            webhookUrl={process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL}
-          />
+          <div className="w-full h-full flex items-center justify-center text-center text-muted-foreground">
+            <p>{t('chat.windowChat.description')}</p>
+          </div>
         </TabsContent>
       </Tabs>
+
+      {/* Only render the window chat bubble when in window mode */}
+      {currentMode === 'window' && (
+        <Chat
+          key="window-mode"
+          mode="window"
+          webhookUrl={process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL}
+          showWelcomeScreen={false}
+        />
+      )}
     </div>
   );
 }
