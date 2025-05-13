@@ -25,17 +25,17 @@ export interface ChatProps {
 }
 
 export interface ApiRequestPayload {
-  action: "sendMessage";
+  action: 'sendMessage';
   chatInput: string;
   files?: File[];
   sessionId?: string;
 }
 
 export interface ApiResponsePayload {
-  output?: string;          // Main response format {output: response}
+  output?: string; // Main response format {output: response}
   messages?: ChatMessage[];
   content?: string;
   sessionId?: string;
   error?: string;
-  [key: string]: unknown;   // Allow for additional properties
+  [key: string]: unknown; // Allow for additional properties
 }

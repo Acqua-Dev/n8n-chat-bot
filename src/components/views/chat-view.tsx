@@ -5,8 +5,13 @@ import { Monitor, MessageSquare } from 'lucide-react';
 import { useI18n } from '@/utils/localization/client';
 import dynamic from 'next/dynamic';
 
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Chat loading skeleton
 const ChatSkeleton = () => (
@@ -33,9 +38,9 @@ const ChatSkeleton = () => (
 );
 
 // Use our Chat implementation
-const Chat = dynamic(() => import('@/components/chat'), {
+const Chat = dynamic(() => import('@/components/chat/chat'), {
   ssr: false,
-  loading: () => <ChatSkeleton />
+  loading: () => <ChatSkeleton />,
 });
 
 export default function ChatView() {
@@ -63,15 +68,15 @@ export default function ChatView() {
           </TabsList>
         </div>
         <TabsContent value="fullscreen" className="h-[calc(100%-60px)]">
-          <Chat 
-            mode="fullscreen" 
-            webhookUrl={process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL} 
+          <Chat
+            mode="fullscreen"
+            webhookUrl={process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL}
           />
         </TabsContent>
         <TabsContent value="window" className="h-[calc(100%-60px)]">
-          <Chat 
-            mode="window" 
-            webhookUrl={process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL} 
+          <Chat
+            mode="window"
+            webhookUrl={process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL}
           />
         </TabsContent>
       </Tabs>
