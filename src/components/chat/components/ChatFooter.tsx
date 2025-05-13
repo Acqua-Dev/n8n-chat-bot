@@ -1,3 +1,7 @@
+'use client';
+
+import { useIsMobile } from '@/utils/ui/hooks/use-mobile';
+
 export interface ChatFooterProps {
   footer: string;
   sessionId?: string;
@@ -9,10 +13,14 @@ export function ChatFooter({
   sessionId,
   showSessionId = process.env.NODE_ENV === 'development',
 }: ChatFooterProps) {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="text-xs text-center text-muted-foreground p-2 border-t">
+    <div
+      className={`text-center text-muted-foreground border-t ${isMobile ? 'text-[10px] p-1' : 'text-xs p-2'}`}
+    >
       {footer}
-      {showSessionId && sessionId && (
+      {showSessionId && sessionId && !isMobile && (
         <div className="mt-1 text-muted-foreground/70">
           Session ID: {sessionId}
         </div>

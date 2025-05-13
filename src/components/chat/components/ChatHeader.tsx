@@ -2,14 +2,17 @@
 
 import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash } from 'lucide-react';
+import { Trash, X } from 'lucide-react';
 import Image from 'next/image';
+import { useIsMobile } from '@/utils/ui/hooks/use-mobile';
 
 export interface ChatHeaderProps {
   title: string;
   chatIcon: string;
   onClearChat: () => void;
   messagesCount: number;
+  onClose?: () => void;
+  isWindowMode?: boolean;
 }
 
 export function ChatHeader({
@@ -17,7 +20,11 @@ export function ChatHeader({
   chatIcon,
   onClearChat,
   messagesCount,
+  onClose,
+  isWindowMode = false,
 }: ChatHeaderProps) {
+  const isMobile = useIsMobile();
+
   // Handle clear button click
   const handleClearClick = () => {
     if (messagesCount > 0) {
@@ -40,7 +47,9 @@ export function ChatHeader({
         <div className="bg-white rounded-full flex items-center justify-center w-7 h-7 shadow-sm">
           <Image src={chatIcon} alt="Chat logo" width="20" height="20" />
         </div>
-        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>
+          {title}
+        </CardTitle>
       </div>
       <div className="flex items-center gap-1">
         <Button
@@ -52,6 +61,18 @@ export function ChatHeader({
         >
           <Trash className="h-4 w-4" />
         </Button>
+
+        {isWindowMode && onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            title="Close chat"
+            className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ml-1"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </CardHeader>
   );

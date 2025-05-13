@@ -211,6 +211,8 @@ export default function Chat({
           chatIcon={chatIcon}
           onClearChat={clearChatHistory}
           messagesCount={messages.length}
+          onClose={mode === 'window' ? () => setIsMinimized(true) : undefined}
+          isWindowMode={mode === 'window'}
         />
 
         <ChatMessages
@@ -236,7 +238,11 @@ export default function Chat({
   // For minimized state in window mode
   if (mode === 'window' && isMinimized) {
     return (
-      <ChatBubble chatIcon={chatIcon} onClick={() => setIsMinimized(false)} />
+      <ChatBubble
+        chatIcon={chatIcon}
+        onClick={() => setIsMinimized(false)}
+        buttonText="Chat with AI"
+      />
     );
   }
 
