@@ -185,4 +185,57 @@ export default {
       error: 'Failed to create customer portal session',
     },
   },
+  // Chat related translations
+  header: {
+    chatLink: 'Chat',
+  },
+  chat: {
+    fullscreenMode: 'Fullscreen Mode',
+    windowMode: 'Window Mode',
+    windowChat: {
+      title: 'Window Chat Mode',
+      description: 'The chat window will appear in the bottom right corner of your screen.',
+    },
+    custom: {
+      title: 'Connect to Your n8n Workflow',
+      webhookLabel: 'Enter your n8n Webhook URL:',
+      webhookDescription: 'This URL connects to your n8n workflow for AI chat functionality.',
+      submitButton: 'Connect & Start Chat',
+      exampleUrl: 'Example URL: https://n8n.example.com/webhook/your-workflow-id/chat',
+      changeUrlButton: 'Change URL',
+    },
+  },
+  i18n: {
+    direct: {
+      title: 'AI Assistant',
+      subtitle: 'Your AI assistant',
+      footer: 'Powered by n8n',
+      getStarted: 'Get Started',
+      inputPlaceholder: 'Ask me...',
+      closeButtonTooltip: 'Close chat',
+      helpMessage: 'How can I assist you today?',
+      initialMessage: "I'm here to help you. What can I do for you today?",
+    },
+    custom: {
+      title: 'AI Assistant',
+      subtitle: 'Custom workflow integration',
+      footer: 'Powered by n8n',
+      getStarted: 'Start Conversation',
+      inputPlaceholder: 'Type your message here...',
+      closeButtonTooltip: 'Close chat',
+      helpMessage: 'How can I help you today?',
+    },
+  },
+  direct: {
+    title: 'Direct Access Mode',
+    description: "You're connected to a dedicated AI assistant with a pre-configured webhook.",
+    features: {
+      feature1: 'No setup required',
+      feature2: 'Instant access to the assistant',
+      feature3: 'Using a pre-configured workflow',
+    },
+  },
+  footer: {
+    copyright: 'Acqua AI. All rights reserved.',
+  },
 } as const;

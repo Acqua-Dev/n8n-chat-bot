@@ -189,4 +189,57 @@ export default {
       error: 'Échec de la création de la session du portail client',
     },
   },
+  // Chat related translations
+  header: {
+    chatLink: 'Chat',
+  },
+  chat: {
+    fullscreenMode: 'Mode Plein Écran',
+    windowMode: 'Mode Fenêtre',
+    windowChat: {
+      title: 'Mode Chat en Fenêtre',
+      description: 'La fenêtre de chat apparaîtra dans le coin inférieur droit de votre écran.',
+    },
+    custom: {
+      title: 'Connectez-vous à Votre Workflow n8n',
+      webhookLabel: 'Entrez votre URL de Webhook n8n :',
+      webhookDescription: 'Cette URL se connecte à votre workflow n8n pour la fonctionnalité de chat IA.',
+      submitButton: 'Connecter & Démarrer le Chat',
+      exampleUrl: 'URL exemple : https://n8n.example.com/webhook/your-workflow-id/chat',
+      changeUrlButton: 'Changer URL',
+    },
+  },
+  i18n: {
+    direct: {
+      title: 'Assistant IA',
+      subtitle: 'Votre assistant IA',
+      footer: 'Propulsé par n8n',
+      getStarted: 'Commencer',
+      inputPlaceholder: 'Posez-moi une question...',
+      closeButtonTooltip: 'Fermer le chat',
+      helpMessage: 'Comment puis-je vous aider aujourd\'hui ?',
+      initialMessage: 'Je suis là pour vous aider. Que puis-je faire pour vous aujourd\'hui ?',
+    },
+    custom: {
+      title: 'Assistant IA',
+      subtitle: 'Intégration de workflow personnalisée',
+      footer: 'Propulsé par n8n',
+      getStarted: 'Démarrer la Conversation',
+      inputPlaceholder: 'Tapez votre message ici...',
+      closeButtonTooltip: 'Fermer le chat',
+      helpMessage: 'Comment puis-je vous aider aujourd\'hui ?',
+    },
+  },
+  direct: {
+    title: 'Mode Accès Direct',
+    description: 'Vous êtes connecté à un assistant IA dédié avec un webhook préconfiguré.',
+    features: {
+      feature1: 'Aucune configuration requise',
+      feature2: 'Accès instantané à l\'assistant',
+      feature3: 'Utilisation d\'un workflow préconfiguré',
+    },
+  },
+  footer: {
+    copyright: 'Acqua AI. Tous droits réservés.',
+  },
 } as const;

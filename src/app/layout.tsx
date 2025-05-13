@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { ReactNode } from 'react';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import StoreProvider from '@/providers/store-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -27,10 +26,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StoreProvider>
-            {children}
-            <Toaster />
-          </StoreProvider>
+          {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

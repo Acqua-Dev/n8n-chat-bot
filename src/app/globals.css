@@ -141,6 +141,19 @@
   --sidebar-border: oklch(0.922 0 0);
 
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Chat Interface Colors */
+  --chat-water-blue: #001D66;
+  --chat-deep-ocean: #002A5C;
+  --chat-sky: #EAEEF8;
+  --chat-grey5: #2A3A4D;
+  --chat-grey4: #8A99B0;
+  --chat-grey2: #D3D9E8;
+  --chat-dawn: #F9F3E3;
+  --chat-white: #FFFFFF;
+  --chat-coral: #FF7F6E;
+  --chat-clear-blue: #8E9DC5;
+  --chat-jade: #D9E9DF;
 }
 
 .dark {
