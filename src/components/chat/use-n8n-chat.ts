@@ -32,8 +32,8 @@ export function useN8nChat(webhookUrl: string) {
 
     try {
       const payload = {
-        action: 'healthCheck',
-        sessionId: uuidv4(),
+        action: 'loadPreviousSession',
+        sessionId: sessionId || uuidv4(),
       };
 
       const response = await fetch(webhookUrl, {
@@ -60,7 +60,7 @@ export function useN8nChat(webhookUrl: string) {
       setError(`Webhook validation failed: ${errorMessage}`);
       return false;
     }
-  }, [webhookUrl]);
+  }, [webhookUrl, sessionId]);
 
   useEffect(() => {
     if (webhookUrl) {

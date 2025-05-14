@@ -8,17 +8,17 @@ export interface ChatMessage {
 }
 
 export interface ApiRequestPayload {
-  action: 'sendMessage' | 'healthCheck';
-  chatInput?: string; // Optional for healthCheck
+  action: 'sendMessage' | 'loadPreviousSession';
+  chatInput?: string; // Optional for loadPreviousSession
   files?: File[];
   sessionId?: string;
 }
 
 export interface ApiResponsePayload {
-  output?: string; // Main response format {output: response}
+  output?: string | object;
   messages?: ChatMessage[];
   content?: string;
   sessionId?: string;
   error?: string;
-  [key: string]: unknown; // Allow for additional properties
+  [key: string]: unknown;
 }
