@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import { Trash, X } from 'lucide-react';
 import Image from 'next/image';
-import { useIsMobile } from '@/utils/ui/hooks/use-mobile';
 
 export interface ChatHeaderProps {
   title: string;
@@ -23,8 +22,6 @@ export function ChatHeader({
   onClose,
   isWindowMode = false,
 }: ChatHeaderProps) {
-  const isMobile = useIsMobile();
-
   // Handle clear button click
   const handleClearClick = () => {
     if (messagesCount > 0) {
@@ -47,9 +44,7 @@ export function ChatHeader({
         <div className="bg-white rounded-full flex items-center justify-center w-7 h-7 shadow-sm">
           <Image src={chatIcon} alt="Chat logo" width="20" height="20" />
         </div>
-        <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>
-          {title}
-        </CardTitle>
+        <CardTitle className="text-base md:text-lg">{title}</CardTitle>
       </div>
       <div className="flex items-center gap-1">
         <Button

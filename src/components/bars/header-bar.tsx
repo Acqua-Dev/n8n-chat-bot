@@ -16,15 +16,6 @@ export default function HeaderBar() {
           />
         </Link>
       </div>
-      
-      <div className="flex space-x-6">
-        <Link 
-          href="/chat"
-          className="text-white hover:text-gray-200 transition-colors"
-        >
-          Chat
-        </Link>
-      </div>
     </header>
   );
 }

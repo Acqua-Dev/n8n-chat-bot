@@ -3,7 +3,6 @@ import { ReactNode } from 'react';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/providers/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
 
 const font = Inter({ variable: '--font-inter', subsets: ['latin'] });
 
@@ -27,7 +26,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-          <Toaster />
         </ThemeProvider>
       </body>
     </html>

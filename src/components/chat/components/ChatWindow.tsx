@@ -1,8 +1,7 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { ReactNode, useEffect } from 'react';
-import { useIsMobile } from '@/utils/ui/hooks/use-mobile';
+import { ReactNode, useEffect, useState } from 'react';
 
 export interface ChatWindowProps {
   children: ReactNode;
@@ -15,7 +14,18 @@ export function ChatWindow({
   isOpen,
   onClickOutside,
 }: ChatWindowProps) {
-  const isMobile = useIsMobile();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -27,7 +37,6 @@ export function ChatWindow({
       }
     };
 
-    // On mobile, prevent body scrolling when chat is open
     if (isMobile && typeof window !== 'undefined') {
       document.body.style.overflow = 'hidden';
     }
@@ -45,28 +54,15 @@ export function ChatWindow({
 
   return (
     <>
-      {/* Overlay to capture clicks outside */}
       <div
         className="fixed inset-0 bg-gradient-to-br from-black/10 to-black/30 backdrop-blur-[2px] z-40"
         onClick={onClickOutside}
       />
-
-      {/* Floating chat window - full screen on mobile, floating on desktop */}
       <div
-        className={`fixed z-50 ${
-          isMobile
-            ? 'inset-0 m-0' // Full screen on mobile
-            : 'bottom-8 right-8 w-full max-w-xl h-[700px] max-h-[85vh]' // Floating window on desktop
-        }`}
+        className="fixed z-50 inset-0 m-0 md:inset-auto md:bottom-8 md:right-8 md:w-full md:max-w-xl md:h-[700px] md:max-h-[85vh]"
         id="window-chat"
       >
-        <Card
-          className={`flex flex-col overflow-hidden shadow-2xl border-0 ${
-            isMobile
-              ? 'h-full rounded-none' // Full height without rounded corners on mobile
-              : 'h-full rounded-lg' // Rounded corners on desktop
-          }`}
-        >
+        <Card className="flex flex-col overflow-hidden shadow-2xl border-0 h-full rounded-none md:rounded-lg">
           {children}
         </Card>
       </div>

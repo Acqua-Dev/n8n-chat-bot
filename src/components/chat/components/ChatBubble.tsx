@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { useIsMobile } from '@/utils/ui/hooks/use-mobile';
 
 export interface ChatBubbleProps {
   chatIcon: string;
@@ -15,25 +14,14 @@ export function ChatBubble({
   onClick,
   buttonText = 'Chat with AI',
 }: ChatBubbleProps) {
-  const isMobile = useIsMobile();
-
   return (
-    <div
-      className={`fixed z-50 ${
-        isMobile
-          ? 'bottom-4 right-4' // Less margin on mobile
-          : 'bottom-8 right-8' // More margin on desktop
-      }`}
-    >
+    <div className="fixed z-50 bottom-4 right-4 md:bottom-8 md:right-8">
       <Button
         onClick={onClick}
-        className={`p-0 flex items-center shadow-xl bg-primary text-primary-foreground hover:shadow-2xl transition-all hover:scale-105 border-0 ${
-          isMobile
-            ? 'rounded-full' // Circle button on mobile
-            : 'rounded-full gap-3' // Pill button with text on desktop
-        }`}
+        className="p-0 flex items-center shadow-xl bg-primary text-primary-foreground hover:shadow-2xl transition-all hover:scale-105 border-0 rounded-full md:gap-3"
         style={{
-          padding: isMobile ? '0.75rem' : '0.75rem 1.5rem 0.75rem 0.75rem',
+          padding: '0.75rem',
+          paddingRight: '0.75rem',
           height: 'auto',
         }}
         title="Open chat"
@@ -47,9 +35,9 @@ export function ChatBubble({
             height={20}
           />
         </div>
-        {!isMobile && (
-          <span className="text-base font-medium">{buttonText}</span>
-        )}
+        <span className="hidden md:inline text-base font-medium">
+          {buttonText}
+        </span>
       </Button>
     </div>
   );
