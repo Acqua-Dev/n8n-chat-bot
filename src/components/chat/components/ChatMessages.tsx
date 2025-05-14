@@ -10,7 +10,6 @@ export interface ChatMessagesProps {
   messages: ChatMessageType[];
   isLoading: boolean;
   helpMessage?: string;
-  chatStarted: boolean;
   thinkingText?: string;
 }
 
@@ -18,7 +17,6 @@ export function ChatMessages({
   messages,
   isLoading,
   helpMessage = 'How can I assist you today?',
-  chatStarted,
   thinkingText = 'Thinking...',
 }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -37,7 +35,7 @@ export function ChatMessages({
 
   return (
     <CardContent className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3">
-      {messages.length === 0 && chatStarted && (
+      {messages.length === 0 && (
         <div className="text-center text-muted-foreground py-6">
           <p>{helpMessage}</p>
         </div>

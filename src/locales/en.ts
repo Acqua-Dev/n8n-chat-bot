@@ -194,14 +194,17 @@ export default {
     windowMode: 'Window Mode',
     windowChat: {
       title: 'Window Chat Mode',
-      description: 'The chat window will appear in the bottom right corner of your screen.',
+      description:
+        'The chat window will appear in the bottom right corner of your screen.',
     },
     custom: {
       title: 'Connect to Your n8n Workflow',
       webhookLabel: 'Enter your n8n Webhook URL:',
-      webhookDescription: 'This URL connects to your n8n workflow for AI chat functionality.',
+      webhookDescription:
+        'This URL connects to your n8n workflow for AI chat functionality.',
       submitButton: 'Connect & Start Chat',
-      exampleUrl: 'Example URL: https://n8n.example.com/webhook/your-workflow-id/chat',
+      exampleUrl:
+        'Example URL: https://n8n.example.com/webhook/your-workflow-id/chat',
       changeUrlButton: 'Change URL',
     },
   },
@@ -210,7 +213,6 @@ export default {
       title: 'AI Assistant',
       subtitle: 'Your AI assistant',
       footer: 'Powered by n8n',
-      getStarted: 'Get Started',
       inputPlaceholder: 'Ask me...',
       closeButtonTooltip: 'Close chat',
       helpMessage: 'How can I assist you today?',
@@ -220,7 +222,6 @@ export default {
       title: 'AI Assistant',
       subtitle: 'Custom workflow integration',
       footer: 'Powered by n8n',
-      getStarted: 'Start Conversation',
       inputPlaceholder: 'Type your message here...',
       closeButtonTooltip: 'Close chat',
       helpMessage: 'How can I help you today?',
@@ -228,7 +229,8 @@ export default {
   },
   direct: {
     title: 'Direct Access Mode',
-    description: "You're connected to a dedicated AI assistant with a pre-configured webhook.",
+    description:
+      "You're connected to a dedicated AI assistant with a pre-configured webhook.",
     features: {
       feature1: 'No setup required',
       feature2: 'Instant access to the assistant',

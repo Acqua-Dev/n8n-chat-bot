@@ -8,8 +8,8 @@ export interface ChatMessage {
 }
 
 export interface ApiRequestPayload {
-  action: 'sendMessage';
-  chatInput: string;
+  action: 'sendMessage' | 'healthCheck';
+  chatInput?: string; // Optional for healthCheck
   files?: File[];
   sessionId?: string;
 }
