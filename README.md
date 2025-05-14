@@ -92,7 +92,7 @@ bun start
 ### Environment Variables
 Edit `.env.local` to set required environment variables, such as:
 
-- `NEXT_PUBLIC_API_URL`: API endpoint URL for your backend.
+- `N8N_BASE_URL`: API endpoint URL for n8n.
 
 ## Contributing
 
