@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { getI18n } from '@/utils/localization/server';
 
 export default async function SideBar() {
@@ -25,7 +24,6 @@ export default async function SideBar() {
           {t('direct.features.feature3')}
         </li>
       </ul>
-
     </div>
   );
 }
