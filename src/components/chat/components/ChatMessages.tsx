@@ -21,6 +21,7 @@ export function ChatMessages({
 }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to bottom whenever messages change or loading state changes
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -29,12 +30,19 @@ export function ChatMessages({
     scrollToBottom();
   }, [isLoading]);
 
+  // Helper function to scroll to the latest message
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Use requestAnimationFrame to ensure scrolling happens after DOM is updated
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    });
   };
 
   return (
-    <CardContent className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3">
+    <CardContent
+      className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 h-full max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-220px)] scroll-smooth"
+      data-testid="chat-messages-container"
+    >
       {messages.length === 0 && (
         <div className="text-center text-muted-foreground py-6">
           <p>{helpMessage}</p>

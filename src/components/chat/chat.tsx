@@ -113,6 +113,9 @@ export default function Chat({
 
   // No need for handleStartChat as we removed the welcome screen
 
+  /**
+   * Clears the chat history and creates a new session
+   */
   const clearChatHistory = () => {
     setMessages([]);
 
@@ -132,7 +135,9 @@ export default function Chat({
   };
 
   const handleSubmit = async (inputMessage: string, selectedFiles: File[]) => {
-    if (!inputMessage.trim() && selectedFiles.length === 0) return;
+    const trimmedMessage = inputMessage?.trim() || '';
+    if (trimmedMessage === '' && (!selectedFiles || selectedFiles.length === 0))
+      return;
 
     const userMessage: ChatMessage = {
       id: uuidv4(),
@@ -200,7 +205,7 @@ export default function Chat({
           isWindowMode={mode === 'window'}
         />
 
-        <div className="relative flex-1">
+        <div className="relative flex-1 overflow-hidden flex flex-col">
           {isError && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <div className="bg-destructive/10 text-destructive p-4 rounded-md max-w-md m-4">

@@ -31,9 +31,30 @@ export function useN8nChat(webhookUrl: string) {
     }
 
     try {
+      try {
+        const getResponse = await fetch(webhookUrl, {
+          method: 'GET',
+          signal: AbortSignal.timeout(5000),
+          headers: {
+            Accept: '*/*',
+            'Cache-Control': 'no-cache',
+          },
+        });
+
+        if (getResponse.ok) {
+          setError(null);
+          return true;
+        }
+      } catch (getErr) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('GET check failed, trying loadPreviousSession', getErr);
+        }
+      }
+
+      const currentSessionId = sessionId || uuidv4();
       const payload = {
         action: 'loadPreviousSession',
-        sessionId: sessionId || uuidv4(),
+        sessionId: currentSessionId,
       };
 
       const response = await fetch(webhookUrl, {
@@ -72,17 +93,23 @@ export function useN8nChat(webhookUrl: string) {
 
   const sendMessage = useCallback(
     async (message: string, files?: File[]): Promise<ChatMessage | null> => {
+      const trimmedMessage = message?.trim() || '';
+
+      if (trimmedMessage === '' && (!files || files.length === 0)) {
+        return null;
+      }
+
+      if (!webhookUrl) {
+        setError('Webhook URL is required');
+        return null;
+      }
+
       if (error) {
         const isValid = await validateWebhookUrl();
         if (!isValid) {
           setError('Cannot send message: Webhook URL is not functional');
           return null;
         }
-      }
-
-      if (!webhookUrl) {
-        setError('Webhook URL is required');
-        return null;
       }
 
       setIsLoading(true);
@@ -104,7 +131,7 @@ export function useN8nChat(webhookUrl: string) {
 
         const payload: ApiRequestPayload = {
           action: 'sendMessage',
-          chatInput: message,
+          chatInput: trimmedMessage,
           sessionId: currentSessionId,
         };
 
