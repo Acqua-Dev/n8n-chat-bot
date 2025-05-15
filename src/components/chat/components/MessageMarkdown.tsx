@@ -1,8 +1,8 @@
 import { cn } from '@/utils/ui/utils';
 import ReactMarkdown from 'react-markdown';
 import { useEffect, useState } from 'react';
-import { detectBpmnXml } from '@/utils/bpmn';
-import { BpmnDiagram } from './BpmnDiagram';
+import { detectBpmnXml } from '@/components/bpmn/bpmn';
+import BpmnDiagram from '../../bpmn/BpmnDiagram';
 import { Button } from '@/components/ui/button';
 
 export interface MessageMarkdownProps {
