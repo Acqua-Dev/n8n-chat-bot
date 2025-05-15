@@ -4,6 +4,12 @@ import { useEffect, useState } from 'react';
 import { detectBpmnXml } from '@/components/bpmn/bpmn';
 import BpmnDiagram from '../../bpmn/BpmnDiagram';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
+import { Code, FileCode } from 'lucide-react';
 
 export interface MessageMarkdownProps {
   content: string;
@@ -15,7 +21,6 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
 
   useEffect(() => {
     try {
-      // Detect if message contains BPMN XML
       const detectedXml = detectBpmnXml(content);
       setBpmnXml(detectedXml);
     } catch (error) {
@@ -44,20 +49,33 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
 
   return (
     <div className="text-sm [&>p]:my-2 [&>ul]:ml-6 [&>ul]:list-disc [&>ol]:ml-6 [&>ol]:list-decimal [&>ul>li]:mb-1 [&>ol>li]:mb-1 [&>h1]:text-xl [&>h1]:font-bold [&>h1]:my-3 [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:my-2 [&>h3]:font-medium [&>h3]:my-1 [&>blockquote]:border-l-4 [&>blockquote]:border-gray-300 [&>blockquote]:pl-4 [&>blockquote]:italic w-full overflow-hidden">
-      {/* If BPMN XML is detected, show the diagram or XML based on toggle */}
       {bpmnXml && (
         <div className="border rounded-md mb-4 overflow-hidden max-w-full">
           <div className="bg-gray-100 dark:bg-gray-800 p-2 flex justify-between items-center border-b">
             <div className="font-medium">
               {showDiagram ? 'BPMN Diagram' : 'BPMN XML'}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDiagram(!showDiagram)}
-            >
-              {showDiagram ? 'Show XML' : 'Show Diagram'}
-            </Button>
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowDiagram(!showDiagram)}
+                    className="h-8 w-8"
+                  >
+                    {showDiagram ? (
+                      <Code className="h-4 w-4" />
+                    ) : (
+                      <FileCode className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{showDiagram ? 'Show XML' : 'Show Diagram'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
 
           <div className="p-2">
