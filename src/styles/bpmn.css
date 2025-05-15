@@ -1,0 +1,17 @@
+.bpmn-container {
+  position: relative;
+  overflow: hidden;
+  background-color: white;
+}
+
+.bpmn-container .djs-palette {
+  display: none;
+}
+
+.bpmn-container .djs-overlay-context-pad {
+  display: none;
+}
+
+.bpmn-container .bjs-powered-by {
+  display: none;
+}

@@ -18,16 +18,16 @@ export function ChatMessage({ message }: ChatMessageProps) {
     <div
       className={cn(
         'flex flex-col mb-3',
-        'max-w-[90%] md:max-w-[85%]',
+        'max-w-[90%] md:max-w-[85%] overflow-hidden',
         message.role === 'user' ? 'ml-auto' : 'mr-auto',
       )}
     >
       <div
         className={cn(
-          'rounded-2xl px-3 py-2 text-sm md:px-4 md:py-3',
+          'rounded-2xl px-3 py-2 text-sm md:px-4 md:py-3 w-full',
           message.role === 'user'
             ? 'bg-primary text-primary-foreground rounded-br-sm'
-            : 'bg-muted rounded-bl-sm',
+            : 'bg-muted rounded-bl-sm overflow-hidden',
         )}
       >
         {message.role === 'user' ? (

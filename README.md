@@ -49,6 +49,7 @@ This project is a [Next.js](https://nextjs.org) application template utilizing t
 - **Commitlint**: Enforces conventional commit messages to maintain a standardized commit history.
 - **Internationalization (i18n)**: Pre-configured for multi-language support.
 - **Bun Package Manager**: High-performance package manager for dependencies and scripts.
+- **BPMN Diagram Visualization**: Automatically detects and renders BPMN 2.0 XML in chat messages as interactive diagrams.
 
 ## Usage
 
@@ -69,6 +70,23 @@ bun dev
   bun format
   ```
 
+### BPMN Diagram Visualization
+The application automatically detects and renders BPMN 2.0 XML in chat messages. BPMN XML can be included in the following ways:
+
+1. **Direct XML** - The full BPMN XML included directly in the message
+2. **Code Blocks** - BPMN XML enclosed in XML code blocks:
+   ```xml
+   <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
+     <!-- BPMN diagram content -->
+   </bpmn:definitions>
+   ```
+
+Features:
+- **Toggle View** - A button allows switching between diagram visualization and raw XML view
+- **Interactive Diagram** - Diagrams can be panned and zoomed for better visualization
+
+To test BPMN rendering, visit `/en/bpmn-test` route which displays a sample BPMN diagram.
+
 ### Production
 Build and start the application for production:
 ```bash
@@ -86,6 +104,7 @@ bun start
 - **Husky**: Manages Git hooks for automated checks.
 - **Commitlint**: Enforces commit message standards.
 - **ShadCN UI**: Provides a set of UI components for cohesive and streamlined designs.
+- **bpmn-js**: Library for visualizing BPMN 2.0 diagrams.
 
 ## Configuration
 
