@@ -90,6 +90,7 @@ export default function Chat({
     sessionId,
     isError,
     validateWebhookUrl,
+    previousMessages,
   } = useN8nChat(webhookUrl, readySessionId);
 
   const displayTitle = title || t('chat.title');
@@ -101,37 +102,47 @@ export default function Chat({
 
   useEffect(() => {
     if (readySessionId && !isInitialized) {
-      const savedMessages = localStorage.getItem(
-        `chat-messages-${webhookUrl}-${readySessionId}`,
-      );
-
-      if (savedMessages) {
-        try {
-          const parsedMessages = JSON.parse(savedMessages) as ChatMessage[];
-          setMessages(parsedMessages);
-        } catch (err) {
-          console.error('Error parsing saved messages:', err);
-          localStorage.removeItem(
-            `chat-messages-${webhookUrl}-${readySessionId}`,
-          );
-        }
-      } else if (initialMessages.length > 0) {
-        const initialChatMessages: ChatMessage[] = initialMessages.map(
-          (msg, index) => ({
-            id: uuidv4(),
-            content: msg,
-            role: 'assistant' as const,
-            timestamp: new Date(
-              Date.now() - (initialMessages.length - index) * 1000,
-            ).toISOString(),
-          }),
+      if (previousMessages.length > 0) {
+        setMessages(previousMessages);
+      } else {
+        const savedMessages = localStorage.getItem(
+          `chat-messages-${webhookUrl}-${readySessionId}`,
         );
-        setMessages(initialChatMessages);
+
+        if (savedMessages) {
+          try {
+            const parsedMessages = JSON.parse(savedMessages) as ChatMessage[];
+            setMessages(parsedMessages);
+          } catch (err) {
+            console.error('Error parsing saved messages:', err);
+            localStorage.removeItem(
+              `chat-messages-${webhookUrl}-${readySessionId}`,
+            );
+          }
+        } else if (initialMessages.length > 0) {
+          const initialChatMessages: ChatMessage[] = initialMessages.map(
+            (msg, index) => ({
+              id: uuidv4(),
+              content: msg,
+              role: 'assistant' as const,
+              timestamp: new Date(
+                Date.now() - (initialMessages.length - index) * 1000,
+              ).toISOString(),
+            }),
+          );
+          setMessages(initialChatMessages);
+        }
       }
 
       setIsInitialized(true);
     }
-  }, [readySessionId, webhookUrl, initialMessages, isInitialized]);
+  }, [
+    readySessionId,
+    webhookUrl,
+    initialMessages,
+    isInitialized,
+    previousMessages,
+  ]);
 
   useEffect(() => {
     if (

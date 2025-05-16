@@ -22,3 +22,15 @@ export interface ApiResponsePayload {
   error?: string;
   [key: string]: unknown;
 }
+
+export interface LoadPreviousSessionResponseItem {
+  id: string[];
+  kwargs: {
+    content: string;
+    additional_kwargs?: Record<string, any>;
+  };
+  lc: number;
+  type: string;
+}
+
+export type LoadPreviousSessionResponse = LoadPreviousSessionResponseItem[];

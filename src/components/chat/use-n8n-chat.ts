@@ -2,7 +2,12 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { ChatMessage, ApiRequestPayload, ApiResponsePayload } from './types';
+import {
+  ChatMessage,
+  ApiRequestPayload,
+  ApiResponsePayload,
+  LoadPreviousSessionResponse,
+} from './types';
 import { useChatStore } from '@/store/chat-store';
 
 export function useN8nChat(
@@ -30,6 +35,76 @@ export function useN8nChat(
     }
   }, [providedSessionId]);
 
+  const loadPreviousSession = useCallback(async (): Promise<ChatMessage[]> => {
+    if (!webhookUrl || !sessionId) {
+      return [];
+    }
+
+    try {
+      // Build URL with query parameters
+      const url = new URL(webhookUrl);
+      url.searchParams.append('action', 'loadPreviousSession');
+      url.searchParams.append('sessionId', sessionId);
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Check if response is in the expected n8n format
+        if (Array.isArray(data) && data.length > 0 && data[0].kwargs) {
+          // Convert n8n format to ChatMessage format
+          const previousMessages: ChatMessage[] = (
+            data as LoadPreviousSessionResponse
+          ).map((item, index) => ({
+            id: item.id?.join('-') || `msg-${index}`,
+            content: item.kwargs.content,
+            role: (item.kwargs.additional_kwargs?.role || 'assistant') as
+              | 'user'
+              | 'assistant',
+            timestamp: new Date().toISOString(), // n8n doesn't provide timestamps
+          }));
+
+          return previousMessages;
+        }
+
+        // If response has messages array directly
+        if (data.messages && Array.isArray(data.messages)) {
+          return data.messages;
+        }
+
+        // If response has output property (legacy format)
+        if (data.output) {
+          return [
+            {
+              id: uuidv4(),
+              content:
+                typeof data.output === 'string'
+                  ? data.output
+                  : JSON.stringify(data.output),
+              role: 'assistant',
+              timestamp: new Date().toISOString(),
+            },
+          ];
+        }
+      }
+
+      return [];
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('LoadPreviousSession failed:', err);
+      }
+      return [];
+    }
+  }, [webhookUrl, sessionId]);
+
   const validateWebhookUrl = useCallback(async (): Promise<boolean> => {
     if (!webhookUrl) {
       setError('Webhook URL is required');
@@ -37,6 +112,7 @@ export function useN8nChat(
     }
 
     try {
+      // Try a simple GET request first
       try {
         const getResponse = await fetch(webhookUrl, {
           method: 'GET',
@@ -57,18 +133,18 @@ export function useN8nChat(
         }
       }
 
+      // Fallback to loadPreviousSession with GET
       const currentSessionId = sessionId || uuidv4();
-      const payload = {
-        action: 'loadPreviousSession',
-        sessionId: currentSessionId,
-      };
+      const url = new URL(webhookUrl);
+      url.searchParams.append('action', 'loadPreviousSession');
+      url.searchParams.append('sessionId', currentSessionId);
 
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
+      const response = await fetch(url.toString(), {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache',
         },
-        body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10000),
       });
 
@@ -89,13 +165,22 @@ export function useN8nChat(
     }
   }, [webhookUrl, sessionId]);
 
+  const [previousMessages, setPreviousMessages] = useState<ChatMessage[]>([]);
+
   useEffect(() => {
-    if (webhookUrl) {
+    if (webhookUrl && sessionId) {
+      // First load previous session if sessionId exists
+      loadPreviousSession().then((messages) => {
+        setPreviousMessages(messages);
+        // Then validate the webhook
+        validateWebhookUrl();
+      });
+    } else if (webhookUrl) {
       validateWebhookUrl();
     } else {
       setError('Webhook URL is missing or invalid');
     }
-  }, [webhookUrl, validateWebhookUrl]);
+  }, [webhookUrl, sessionId, loadPreviousSession, validateWebhookUrl]);
 
   const sendMessage = useCallback(
     async (message: string, files?: File[]): Promise<ChatMessage | null> => {
@@ -288,5 +373,7 @@ export function useN8nChat(
     clearSession,
     isError,
     validateWebhookUrl,
+    loadPreviousSession,
+    previousMessages,
   };
 }
