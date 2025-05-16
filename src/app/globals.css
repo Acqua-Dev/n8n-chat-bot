@@ -80,7 +80,7 @@
   --radius: 0.625rem;
 
   /* ---- Integration of chat colors into Shadcn theme ---- */
-  
+
   /* Base colors */
   --background: #FFFFFF; /* chat-white */
   --foreground: #2A3A4D; /* chat-grey5 */
@@ -153,7 +153,7 @@
 
 .dark {
   /* ---- Dark mode using chat colors ---- */
-  
+
   /* Base colors - using deep ocean as background */
   --background: #002A5C; /* chat-deep-ocean */
   --foreground: #FFFFFF; /* chat-white */

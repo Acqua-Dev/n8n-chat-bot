@@ -1,10 +1,7 @@
-import { Metadata } from 'next';
-import { ReactNode } from 'react';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Chat | Acqua',
-  description: 'Chat with Acqua AI assistant',
-};
+import { ReactNode } from 'react';
+import ChatSidebar from '@/components/chat/components/ChatSidebar';
 
 interface Props {
   children: ReactNode;
@@ -12,8 +9,8 @@ interface Props {
 
 export default function ChatLayout({ children }: Props) {
   return (
-    <div className="flex flex-col min-h-screen w-full">
+    <ChatSidebar>
       <main className="flex-1">{children}</main>
-    </div>
+    </ChatSidebar>
   );
 }

@@ -7,7 +7,6 @@ import { ChatMessage, ChatMode } from './types';
 import { useN8nChat } from './use-n8n-chat';
 import { useChatStore } from '@/store/chat-store';
 import ChatFooter from '@/components/chat/components/ChatFooter';
-import ChatHeader from '@/components/chat/components/ChatHeader';
 import ChatMessages from '@/components/chat/components/ChatMessages';
 import ChatInput from '@/components/chat/components/ChatInput';
 import ChatBubble from '@/components/chat/components/ChatBubble';
@@ -22,7 +21,6 @@ interface ChatProps {
   sessionId: string;
   initialMessages?: string[];
   allowFileUploads?: boolean;
-  title?: string;
   footer?: string;
   inputPlaceholder?: string;
   closeButtonTooltip?: string;
@@ -36,7 +34,6 @@ export default function Chat({
   sessionId: initialSessionId,
   initialMessages = [],
   allowFileUploads = true,
-  title,
   footer,
   inputPlaceholder,
   helpMessage,
@@ -49,7 +46,8 @@ export default function Chat({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [readySessionId, setReadySessionId] = useState<string | null>(null);
-  const { getSessionId, getWebhookBySessionId, setSession } = useChatStore();
+  const { getSessionId, getWebhookBySessionId, setSession, updateSessionInfo } =
+    useChatStore();
   const hasProcessedSessionId = useRef(false);
 
   useEffect(() => {
@@ -93,7 +91,6 @@ export default function Chat({
     previousMessages,
   } = useN8nChat(webhookUrl, readySessionId);
 
-  const displayTitle = title || t('chat.title');
   const displayFooter = footer || t('chat.footer');
   const displayInputPlaceholder =
     inputPlaceholder || t('chat.input.placeholder');
@@ -167,29 +164,6 @@ export default function Chat({
     }
   }, [messages, webhookUrl, readySessionId, isInitialized]);
 
-  const handleNewChat = useCallback(() => {
-    const { createSession } = useChatStore.getState();
-    const newSessionId = createSession(webhookUrl);
-
-    const urlParams = new URLSearchParams(searchParams);
-    const queryString = urlParams.toString();
-    router.push(`/${newSessionId}${queryString ? `?${queryString}` : ''}`);
-  }, [webhookUrl, router, searchParams]);
-
-  const clearChatHistory = useCallback(() => {
-    setMessages([]);
-
-    if (typeof window !== 'undefined' && readySessionId) {
-      try {
-        localStorage.removeItem(
-          `chat-messages-${webhookUrl}-${readySessionId}`,
-        );
-      } catch (err) {
-        console.error('Error clearing chat history:', err);
-      }
-    }
-  }, [webhookUrl, readySessionId]);
-
   const handleSubmit = useCallback(
     async (inputMessage: string, selectedFiles: File[]) => {
       const trimmedMessage = inputMessage?.trim() || '';
@@ -209,6 +183,16 @@ export default function Chat({
 
       setMessages((prev) => [...prev, userMessage]);
 
+      if (readySessionId) {
+        setTimeout(() => {
+          updateSessionInfo(readySessionId, {
+            lastMessage: trimmedMessage,
+            title:
+              messages.length === 0 ? trimmedMessage.slice(0, 50) : undefined,
+          });
+        }, 0);
+      }
+
       try {
         const response = await sendMessage(trimmedMessage, selectedFiles);
 
@@ -226,7 +210,7 @@ export default function Chat({
         setMessages((prev) => [...prev, errorMessage]);
       }
     },
-    [sendMessage, t],
+    [sendMessage, t, readySessionId, updateSessionInfo, messages.length],
   );
 
   const WebhookErrorMessage = useCallback(() => {
@@ -262,15 +246,6 @@ export default function Chat({
 
     return (
       <>
-        <ChatHeader
-          title={displayTitle}
-          onClearChat={clearChatHistory}
-          messagesCount={messages.length}
-          onClose={mode === 'window' ? () => setIsMinimized(true) : undefined}
-          isWindowMode={mode === 'window'}
-          onNewChat={handleNewChat}
-        />
-
         <div className="relative flex-1 flex flex-col overflow-hidden">
           {isError && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">

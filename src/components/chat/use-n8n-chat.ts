@@ -356,11 +356,10 @@ export function useN8nChat(
   );
 
   const clearSession = useCallback(() => {
-    clearStoreSession(webhookUrl);
-    const newSessionId = getSessionId(webhookUrl);
+    const newSessionId = clearStoreSession(webhookUrl);
     setSessionId(newSessionId);
     return newSessionId;
-  }, [webhookUrl, clearStoreSession, getSessionId]);
+  }, [webhookUrl, clearStoreSession]);
 
   const isError = !!error;
 

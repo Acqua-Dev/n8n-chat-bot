@@ -1,5 +1,11 @@
 import ChatView from '@/components/views/chat-view';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Chat | Acqua',
+  description: 'Chat with Acqua AI assistant',
+};
 
 interface Props {
   params: Promise<{
