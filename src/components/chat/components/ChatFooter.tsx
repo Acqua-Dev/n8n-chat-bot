@@ -6,16 +6,16 @@ export interface ChatFooterProps {
   showSessionId?: boolean;
 }
 
-export function ChatFooter({
+export default function ChatFooter({
   footer,
   sessionId,
   showSessionId = process.env.NODE_ENV === 'development',
 }: ChatFooterProps) {
   return (
-    <div className="text-center text-muted-foreground border-t text-[10px] p-1 md:text-xs md:p-2">
+    <div className="text-center text-xs text-muted-foreground/60 py-2">
       {footer}
       {showSessionId && sessionId && (
-        <div className="hidden md:block mt-1 text-muted-foreground/70">
+        <div className="mt-0.5 text-[10px] text-muted-foreground/40">
           Session ID: {sessionId}
         </div>
       )}

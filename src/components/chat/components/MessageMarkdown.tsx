@@ -16,7 +16,7 @@ export interface MessageMarkdownProps {
   content: string;
 }
 
-export function MessageMarkdown({ content }: MessageMarkdownProps) {
+export default function MessageMarkdown({ content }: MessageMarkdownProps) {
   const [bpmnXml, setBpmnXml] = useState<string | null>(null);
   const [showDiagram, setShowDiagram] = useState<boolean>(true);
   const t = useI18n();
@@ -50,18 +50,18 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
   };
 
   return (
-    <div className="text-sm [&>p]:my-2 [&>ul]:ml-6 [&>ul]:list-disc [&>ol]:ml-6 [&>ol]:list-decimal [&>ul>li]:mb-1 [&>ol>li]:mb-1 [&>h1]:text-xl [&>h1]:font-bold [&>h1]:my-3 [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:my-2 [&>h3]:font-medium [&>h3]:my-1 [&>blockquote]:border-l-4 [&>blockquote]:border-gray-300 [&>blockquote]:pl-4 [&>blockquote]:italic w-full overflow-hidden">
+    <div className="prose prose-sm max-w-none text-foreground overflow-x-auto">
       {bpmnXml && (
-        <div className="border rounded-md mb-4 overflow-hidden max-w-full">
-          <div className="bg-gray-100 dark:bg-gray-800 p-2 flex justify-between items-center border-b">
-            <div className="font-medium">
+        <div className="border border-border/50 rounded-lg mb-4 overflow-hidden max-w-full">
+          <div className="bg-muted/50 p-2 flex justify-between items-center border-b border-border/50">
+            <div className="text-sm font-medium">
               {showDiagram ? t('bpmn.diagram') : t('bpmn.xml')}
             </div>
             <div className="flex gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     onClick={() => setShowDiagram(!showDiagram)}
                     className="h-8 w-8"
@@ -86,7 +86,7 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
             {showDiagram ? (
               <BpmnDiagram xml={bpmnXml} />
             ) : (
-              <div className="bg-white rounded-md border border-gray-300 h-[400px] max-w-full overflow-auto">
+              <div className="bg-background rounded-md border border-border/50 h-[400px] max-w-full overflow-auto">
                 <pre className="p-3 text-xs min-w-min">
                   <code
                     dangerouslySetInnerHTML={{ __html: formatXml(bpmnXml) }}
@@ -100,6 +100,29 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
 
       <ReactMarkdown
         components={{
+          p: ({ children }) => (
+            <p className="mb-4 leading-relaxed">{children}</p>
+          ),
+          ul: ({ children }) => (
+            <ul className="ml-4 mb-4 list-disc">{children}</ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="ml-4 mb-4 list-decimal">{children}</ol>
+          ),
+          h1: ({ children }) => (
+            <h1 className="text-xl font-bold mb-4">{children}</h1>
+          ),
+          h2: ({ children }) => (
+            <h2 className="text-lg font-semibold mb-3">{children}</h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="text-base font-medium mb-2">{children}</h3>
+          ),
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-4 border-muted pl-4 italic mb-4">
+              {children}
+            </blockquote>
+          ),
           code(props: any) {
             const { inline, className, children } = props;
             const match = /language-(\w+)/.exec(className || '');
@@ -117,18 +140,18 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
             return !inline && match ? (
               <pre
                 className={cn(
-                  'bg-gray-100 dark:bg-gray-800 p-3 rounded-md mt-2 overflow-x-auto',
+                  'bg-muted/80 dark:bg-muted p-4 rounded-lg mt-2 mb-4 overflow-x-auto',
                   className,
                 )}
               >
-                <code className={className} {...props}>
+                <code className={cn('text-sm', className)} {...props}>
                   {children}
                 </code>
               </pre>
             ) : (
               <code
                 className={cn(
-                  'bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono',
+                  'bg-muted px-1.5 py-0.5 rounded text-sm font-mono',
                   className,
                 )}
                 {...props}
@@ -140,7 +163,7 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
           pre(props: any) {
             const { children } = props;
             return (
-              <pre className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 p-3 rounded-md mt-2 overflow-x-auto">
+              <pre className="whitespace-pre-wrap bg-muted/80 dark:bg-muted p-4 rounded-lg mt-2 mb-4 overflow-x-auto">
                 {children}
               </pre>
             );

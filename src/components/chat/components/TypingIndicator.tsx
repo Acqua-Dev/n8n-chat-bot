@@ -1,27 +1,35 @@
-export interface TypingIndicatorProps {
-  thinkingText?: string;
-}
+import { Bot } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-export function TypingIndicator({
-  thinkingText = 'Thinking...',
-}: TypingIndicatorProps) {
+export default function TypingIndicator() {
   return (
-    <div className="flex items-center gap-2 p-3 bg-muted rounded-2xl w-fit">
-      <div className="flex items-center space-x-1">
-        <div
-          className="w-2 h-2 rounded-full bg-current animate-bounce"
-          style={{ animationDelay: '0ms' }}
-        />
-        <div
-          className="w-2 h-2 rounded-full bg-current animate-bounce"
-          style={{ animationDelay: '200ms' }}
-        />
-        <div
-          className="w-2 h-2 rounded-full bg-current animate-bounce"
-          style={{ animationDelay: '400ms' }}
-        />
+    <div className="w-full bg-muted/20 overflow-hidden">
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        <div className="flex gap-4">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-secondary text-secondary-foreground">
+              <Bot className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="flex items-center gap-1">
+            <div className="flex items-center space-x-1">
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce"
+                style={{ animationDelay: '0ms' }}
+              />
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce"
+                style={{ animationDelay: '200ms' }}
+              />
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce"
+                style={{ animationDelay: '400ms' }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
-      <span className="text-sm text-muted-foreground ml-1">{thinkingText}</span>
     </div>
   );
 }

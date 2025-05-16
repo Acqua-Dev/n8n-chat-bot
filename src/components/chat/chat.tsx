@@ -1,25 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, ChatMode } from './types';
 import { useN8nChat } from './use-n8n-chat';
-import { Card } from '../ui/card';
-import { ChatFooter } from '@/components/chat/components/ChatFooter';
-import { ChatHeader } from '@/components/chat/components/ChatHeader';
-import { ChatMessages } from '@/components/chat/components/ChatMessages';
-import { ChatInput } from '@/components/chat/components/ChatInput';
-import { ChatBubble } from '@/components/chat/components/ChatBubble';
-import { ChatWindow } from '@/components/chat/components/ChatWindow';
+import ChatFooter from '@/components/chat/components/ChatFooter';
+import ChatHeader from '@/components/chat/components/ChatHeader';
+import ChatMessages from '@/components/chat/components/ChatMessages';
+import ChatInput from '@/components/chat/components/ChatInput';
+import ChatBubble from '@/components/chat/components/ChatBubble';
+import ChatWindow from '@/components/chat/components/ChatWindow';
 import { Button } from '@/components/ui/button';
-
-const MAX_STORED_MESSAGES = 50;
+import { useI18n } from '@/utils/localization/client';
+import { CHAT_CONFIG } from './constants';
 
 interface ChatProps {
   mode: ChatMode;
   webhookUrl: string;
   initialMessages?: string[];
-  chatIcon?: string;
   allowFileUploads?: boolean;
   title?: string;
   footer?: string;
@@ -33,16 +31,17 @@ export default function Chat({
   mode,
   webhookUrl,
   initialMessages = [],
-  chatIcon = '/logo_small.png',
   allowFileUploads = true,
-  title = 'AI Assistant',
-  footer = 'Powered by Acqua',
-  inputPlaceholder = 'Ask me...',
-  helpMessage = 'How can I assist you today?',
-  thinkingText = 'Thinking...',
+  title,
+  footer,
+  inputPlaceholder,
+  helpMessage,
+  thinkingText,
 }: ChatProps) {
+  const t = useI18n();
   const [isMinimized, setIsMinimized] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const {
     sendMessage,
@@ -55,6 +54,14 @@ export default function Chat({
     validateWebhookUrl,
   } = useN8nChat(webhookUrl);
 
+  // Set default values with i18n
+  const displayTitle = title || t('chat.title');
+  const displayFooter = footer || t('chat.footer');
+  const displayInputPlaceholder =
+    inputPlaceholder || t('chat.input.placeholder');
+  const displayHelpMessage = helpMessage || t('chat.messages.helpMessage');
+  const displayThinkingText = thinkingText || t('chat.messages.thinking');
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.log('Chat: Session ID:', sessionId);
@@ -62,68 +69,63 @@ export default function Chat({
   }, [sessionId]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (!isInitialized && typeof window !== 'undefined') {
       const savedMessages = localStorage.getItem(`chat-messages-${webhookUrl}`);
-      if (savedMessages && messages.length === 0) {
+
+      if (savedMessages) {
         try {
           const parsedMessages = JSON.parse(savedMessages) as ChatMessage[];
           setMessages(parsedMessages);
         } catch (err) {
           console.error('Error parsing saved messages:', err);
-
-          if (messages.length === 0 && initialMessages.length > 0) {
-            const initialChatMessages: ChatMessage[] = initialMessages.map(
-              (msg) => ({
-                id: uuidv4(),
-                content: msg,
-                role: 'assistant',
-                timestamp: new Date().toISOString(),
-              }),
-            );
-            setMessages(initialChatMessages);
-          }
+          localStorage.removeItem(`chat-messages-${webhookUrl}`);
         }
-      } else if (messages.length === 0 && initialMessages.length > 0) {
+      }
+
+      if (messages.length === 0 && initialMessages.length > 0) {
         const initialChatMessages: ChatMessage[] = initialMessages.map(
-          (msg) => ({
+          (msg, index) => ({
             id: uuidv4(),
             content: msg,
-            role: 'assistant',
-            timestamp: new Date().toISOString(),
+            role: 'assistant' as const,
+            timestamp: new Date(
+              Date.now() - (initialMessages.length - index) * 1000,
+            ).toISOString(),
           }),
         );
         setMessages(initialChatMessages);
       }
+
+      setIsInitialized(true);
     }
-  }, [initialMessages, messages.length, webhookUrl]);
+  }, [initialMessages, webhookUrl, isInitialized, messages.length]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && messages.length > 0) {
+    if (isInitialized && typeof window !== 'undefined' && messages.length > 0) {
       const messagesToStore =
-        messages.length > MAX_STORED_MESSAGES
-          ? messages.slice(-MAX_STORED_MESSAGES)
+        messages.length > CHAT_CONFIG.MAX_STORED_MESSAGES
+          ? messages.slice(-CHAT_CONFIG.MAX_STORED_MESSAGES)
           : messages;
 
-      localStorage.setItem(
-        `chat-messages-${webhookUrl}`,
-        JSON.stringify(messagesToStore),
-      );
+      try {
+        localStorage.setItem(
+          `chat-messages-${webhookUrl}`,
+          JSON.stringify(messagesToStore),
+        );
+      } catch (err) {
+        console.error('Error saving messages to localStorage:', err);
+      }
     }
-  }, [messages, webhookUrl]);
+  }, [messages, webhookUrl, isInitialized]);
 
-  // No need for handleStartChat as we removed the welcome screen
-
-  /**
-   * Clears the chat history and creates a new session
-   */
-  const clearChatHistory = () => {
+  const clearChatHistory = useCallback(() => {
     setMessages([]);
 
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(`chat-messages-${webhookUrl}`);
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Cleared chat history for webhook:', webhookUrl);
+      try {
+        localStorage.removeItem(`chat-messages-${webhookUrl}`);
+      } catch (err) {
+        console.error('Error clearing chat history:', err);
       }
     }
 
@@ -132,44 +134,54 @@ export default function Chat({
     if (process.env.NODE_ENV === 'development') {
       console.log('Chat history cleared with new session');
     }
-  };
+  }, [clearSession, webhookUrl]);
 
-  const handleSubmit = async (inputMessage: string, selectedFiles: File[]) => {
-    const trimmedMessage = inputMessage?.trim() || '';
-    if (trimmedMessage === '' && (!selectedFiles || selectedFiles.length === 0))
-      return;
+  const handleSubmit = useCallback(
+    async (inputMessage: string, selectedFiles: File[]) => {
+      const trimmedMessage = inputMessage?.trim() || '';
+      if (
+        trimmedMessage === '' &&
+        (!selectedFiles || selectedFiles.length === 0)
+      ) {
+        return;
+      }
 
-    const userMessage: ChatMessage = {
-      id: uuidv4(),
-      content: inputMessage,
-      role: 'user',
-      timestamp: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
-    const response = await sendMessage(inputMessage, selectedFiles);
-
-    if (response) {
-      setMessages((prev) => [...prev, response]);
-    } else if (error) {
-      const errorMessage: ChatMessage = {
+      const userMessage: ChatMessage = {
         id: uuidv4(),
-        content: `Error: ${error}`,
-        role: 'assistant',
+        content: trimmedMessage,
+        role: 'user' as const,
         timestamp: new Date().toISOString(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
-    }
-  };
 
-  const WebhookErrorMessage = () => {
+      setMessages((prev) => [...prev, userMessage]);
+
+      try {
+        const response = await sendMessage(trimmedMessage, selectedFiles);
+
+        if (response) {
+          setMessages((prev) => [...prev, response]);
+        }
+      } catch (err) {
+        console.error('Error sending message:', err);
+        const errorMessage: ChatMessage = {
+          id: uuidv4(),
+          content: t('chat.errors.sendFailed'),
+          role: 'assistant' as const,
+          timestamp: new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      }
+    },
+    [sendMessage, t],
+  );
+
+  const WebhookErrorMessage = useCallback(() => {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6 text-center">
         <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-4 max-w-md">
-          <h3 className="font-bold mb-2">Connection Error</h3>
+          <h3 className="font-bold mb-2">{t('chat.errors.connection')}</h3>
           <p className="text-sm mb-3">
-            There was a problem connecting to the chat service.
+            {t('chat.errors.connectionDescription')}
             {error && (
               <span className="block mt-2 text-xs opacity-80">{error}</span>
             )}
@@ -182,12 +194,12 @@ export default function Chat({
             variant="outline"
             className="w-full"
           >
-            Try Again
+            {t('chat.errors.tryAgain')}
           </Button>
         </div>
       </div>
     );
-  };
+  }, [error, setError, t, validateWebhookUrl]);
 
   const renderChatContent = () => {
     if (isError) {
@@ -197,21 +209,22 @@ export default function Chat({
     return (
       <>
         <ChatHeader
-          title={title}
-          chatIcon={chatIcon}
+          title={displayTitle}
           onClearChat={clearChatHistory}
           messagesCount={messages.length}
           onClose={mode === 'window' ? () => setIsMinimized(true) : undefined}
           isWindowMode={mode === 'window'}
         />
 
-        <div className="relative flex-1 overflow-hidden flex flex-col">
+        <div className="relative flex-1 flex flex-col overflow-hidden">
           {isError && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <div className="bg-destructive/10 text-destructive p-4 rounded-md max-w-md m-4">
-                <h3 className="font-bold mb-2">Connection Error</h3>
+                <h3 className="font-bold mb-2">
+                  {t('chat.errors.connection')}
+                </h3>
                 <p className="text-sm mb-3">
-                  Lost connection to the chat service.
+                  {t('chat.errors.lostConnection')}
                   {error && (
                     <span className="block mt-2 text-xs opacity-80">
                       {error}
@@ -226,40 +239,42 @@ export default function Chat({
                   variant="outline"
                   className="w-full"
                 >
-                  Reconnect
+                  {t('chat.errors.reconnect')}
                 </Button>
               </div>
             </div>
           )}
 
-          <ChatMessages
-            messages={messages}
-            isLoading={isLoading}
-            helpMessage={helpMessage}
-            thinkingText={thinkingText}
-          />
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <ChatMessages
+              messages={messages}
+              isLoading={isLoading}
+              helpMessage={displayHelpMessage}
+              thinkingText={displayThinkingText}
+              error={error}
+            />
+          </div>
+
+          <div className="sticky bottom-0">
+            <ChatInput
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              inputPlaceholder={displayInputPlaceholder}
+              allowFileUploads={allowFileUploads}
+            />
+          </div>
+          <ChatFooter footer={displayFooter} sessionId={sessionId} />
         </div>
-
-        <ChatInput
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          inputPlaceholder={inputPlaceholder}
-          allowFileUploads={allowFileUploads}
-        />
-
-        <ChatFooter footer={footer} sessionId={sessionId} />
       </>
     );
   };
 
+  if (!isInitialized) {
+    return <></>;
+  }
+
   if (mode === 'window' && isMinimized) {
-    return (
-      <ChatBubble
-        chatIcon={chatIcon}
-        onClick={() => setIsMinimized(false)}
-        buttonText="Chat with AI"
-      />
-    );
+    return <ChatBubble onClick={() => setIsMinimized(false)} />;
   }
 
   if (mode === 'window' && !isMinimized) {
@@ -274,8 +289,8 @@ export default function Chat({
   }
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-md w-full">
+    <div className="flex flex-col h-full overflow-hidden w-full">
       {renderChatContent()}
-    </Card>
+    </div>
   );
 }

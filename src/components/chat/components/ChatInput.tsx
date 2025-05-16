@@ -1,9 +1,20 @@
 'use client';
 
-import { useState, useRef, FormEvent } from 'react';
+import {
+  useState,
+  useRef,
+  FormEvent,
+  useEffect,
+  useCallback,
+  KeyboardEvent,
+  ChangeEvent,
+} from 'react';
 import { Button } from '@/components/ui/button';
-import { CardFooter } from '@/components/ui/card';
-import { Paperclip, Send } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowUp } from 'lucide-react';
+import { useI18n } from '@/utils/localization/client';
+import { CHAT_CONFIG } from '../constants';
+import { cn } from '@/utils/ui/utils';
 
 export interface ChatInputProps {
   onSubmit: (message: string, files: File[]) => void;
@@ -12,113 +23,116 @@ export interface ChatInputProps {
   allowFileUploads?: boolean;
 }
 
-export function ChatInput({
+export default function ChatInput({
   onSubmit,
   isLoading,
-  inputPlaceholder = 'Ask me...',
-  allowFileUploads = true,
+  inputPlaceholder,
 }: ChatInputProps) {
+  const t = useI18n();
   const [inputValue, setInputValue] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Handle form submission
-  const handleSubmit = (e?: FormEvent) => {
-    if (e) e.preventDefault();
-
-    if (!inputValue.trim() && selectedFiles.length === 0) return;
-
-    // Call parent's onSubmit
-    onSubmit(inputValue, selectedFiles);
-
-    // Clear input and files
-    setInputValue('');
-    setSelectedFiles([]);
-
-    // Reset textarea height
+  useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.focus();
     }
-  };
+  }, []);
 
-  // Handle file selection
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const filesArray = Array.from(e.target.files);
-      setSelectedFiles(filesArray);
-    }
-  };
+  const handleResize = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
 
-  // Handle click on file button
-  const handleFileButtonClick = () => {
-    fileInputRef.current?.click();
-  };
+    textarea.style.height = 'auto';
+    const newHeight = Math.min(textarea.scrollHeight, CHAT_CONFIG.MAX_HEIGHT);
+    textarea.style.height = `${newHeight}px`;
+  }, []);
+
+  const handleSubmit = useCallback(
+    (e?: FormEvent) => {
+      if (e) e.preventDefault();
+
+      const trimmedValue = inputValue.trim();
+
+      if (!trimmedValue) {
+        return;
+      }
+
+      onSubmit(trimmedValue, []);
+
+      setInputValue('');
+
+      if (textareaRef.current) {
+        textareaRef.current.style.height = `${CHAT_CONFIG.MIN_HEIGHT}px`;
+      }
+    },
+    [inputValue, onSubmit],
+  );
+
+  const handleInputChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
+      setInputValue(e.target.value);
+      handleResize();
+    },
+    [handleResize],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    },
+    [handleSubmit, isLoading],
+  );
+
+  const hasContent = inputValue.trim().length > 0;
+  const isDisabled = isLoading;
+  const canSubmit = hasContent && !isDisabled;
 
   return (
-    <CardFooter className="border-t p-2 pb-3 md:p-4">
-      <form onSubmit={handleSubmit} className="flex items-end gap-2 w-full">
-        {allowFileUploads && (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleFileButtonClick}
-              title="Upload file"
-              className="shrink-0"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              onChange={handleFileSelect}
-              multiple
-            />
-
-            {selectedFiles.length > 0 && (
-              <div className="text-xs text-muted-foreground">
-                {selectedFiles.length} file(s) selected
-              </div>
-            )}
-          </>
-        )}
-
-        <div className="relative flex-1">
-          <textarea
-            value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value);
-              // Auto-resize the textarea
-              e.target.style.height = 'auto';
-              e.target.style.height = `${Math.min(e.target.scrollHeight, window.innerWidth < 768 ? 80 : 120)}px`;
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit();
-              }
-            }}
-            placeholder={inputPlaceholder}
-            disabled={isLoading}
-            className="flex w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-9 text-base h-9 max-h-20 md:text-sm md:h-9 md:max-h-32"
-            rows={1}
+    <div className="px-4 py-4">
+      <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+        <div className="relative">
+          <Textarea
             ref={textareaRef}
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder={inputPlaceholder || t('chat.input.placeholder')}
+            disabled={isDisabled}
+            className={cn(
+              'min-h-[48px] resize-none pr-14 py-3 text-base overflow-y-hidden',
+              'rounded-2xl border-border',
+              'focus:ring-2 focus:ring-primary focus:border-transparent',
+              'transition-all duration-200',
+              isDisabled && 'opacity-50 cursor-not-allowed',
+            )}
+            rows={1}
+            aria-label={t('chat.input.label')}
           />
-        </div>
 
-        <Button
-          type="submit"
-          size="icon"
-          disabled={
-            isLoading || (!inputValue.trim() && selectedFiles.length === 0)
-          }
-        >
-          <Send className="h-3 w-3 md:h-4 md:w-4" />
-        </Button>
+          {isLoading && (
+            <span className="sr-only">{t('chat.status.sending')}</span>
+          )}
+
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!canSubmit}
+            className={cn(
+              'absolute right-2 top-1/2 -translate-y-1/2',
+              'h-8 w-8 rounded-full',
+              'bg-primary hover:bg-primary/90',
+              'transition-all duration-200',
+              'disabled:opacity-30 disabled:cursor-not-allowed',
+            )}
+            aria-label={t('chat.input.sendButton')}
+          >
+            <ArrowUp className="h-4 w-4" />
+          </Button>
+        </div>
       </form>
-    </CardFooter>
+    </div>
   );
 }

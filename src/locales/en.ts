@@ -13,6 +13,7 @@ export default {
     saving: 'Saving...',
     cancel: 'Cancel',
     backToHome: 'Back to Home',
+    tryAgain: 'Try Again',
   },
   user: {
     profilePicture: 'Profile Picture',
@@ -197,6 +198,50 @@ export default {
   chat: {
     fullscreenMode: 'Fullscreen Mode',
     windowMode: 'Window Mode',
+    title: 'AI Assistant',
+    footer: 'Powered by Acqua',
+    bubble: {
+      text: 'Chat with AI',
+    },
+    status: {
+      sending: 'Sending...',
+    },
+    input: {
+      placeholder: 'Message AI Assistant...',
+      sendButton: 'Send message',
+      label: 'Chat input',
+    },
+    messages: {
+      helpMessage: 'How can I assist you today?',
+      welcome: 'Welcome!',
+      thinking: 'Thinking...',
+      you: 'You',
+      assistant: 'Assistant',
+      label: 'Chat messages',
+    },
+    header: {
+      newChat: 'New chat',
+      clearConfirm:
+        'Are you sure you want to clear all messages? This cannot be undone.',
+      closeButton: 'Close chat',
+    },
+    errors: {
+      connection: 'Connection Error',
+      connectionDescription:
+        'There was a problem connecting to the chat service.',
+      lostConnection: 'Lost connection to the chat service.',
+      tryAgain: 'Try Again',
+      reconnect: 'Reconnect',
+      submitFailed: 'Failed to send message',
+      generic: 'Something went wrong',
+      sendFailed: 'Failed to send message',
+      networkError: 'Network error occurred',
+      serverError: 'Server error occurred',
+      timeout: 'Request timed out',
+      emptyMessage: 'Please enter a message',
+      messageTooLong: 'Message too long (max {{max}} characters)',
+      disabled: 'Input is currently disabled',
+    },
     windowChat: {
       title: 'Window Chat Mode',
       description:

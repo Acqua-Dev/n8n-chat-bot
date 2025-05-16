@@ -102,8 +102,8 @@
   --secondary-foreground: #001D66; /* chat-water-blue */
 
   /* Muted colors */
-  --muted: #EAEEF8; /* chat-sky */
-  --muted-foreground: #8A99B0; /* chat-grey4 */
+  --muted: #F6F8FA; /* lighter muted background */
+  --muted-foreground: #6B7280; /* more neutral grey */
 
   /* Accent colors - using chat-dawn */
   --accent: #F9F3E3; /* chat-dawn */
@@ -227,11 +227,22 @@
 @keyframes slideUp {
   from { 
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(20px);
   }
   to { 
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes messageIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
@@ -257,4 +268,8 @@
 
 .animate-pulse-slow {
   animation: pulse 2.5s infinite;
+}
+
+.animate-messageIn {
+  animation: messageIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
