@@ -98,6 +98,11 @@ export default {
     notFoundDescription: "La page que vous recherchez n'existe pas.",
     unauthorized: 'Non autorisé',
     unauthorizedDescription: "Vous n'êtes pas autorisé à accéder à cette page.",
+    exportDiagramPng: "Erreur lors de l'exportation du diagramme en PNG",
+    copyXml: 'Erreur lors de la copie du XML',
+    xmlParsing: "Impossible d'analyser le diagramme BPMN",
+    cannotGetCanvas: "Impossible d'obtenir le contexte du canevas",
+    cannotCreateBlob: 'Impossible de créer le blob',
   },
   auth: {
     title: {
@@ -254,12 +259,5 @@ export default {
     copyXml: 'Copier le XML',
     loadingDiagram: 'Chargement du diagramme...',
     diagramError: 'Erreur de diagramme',
-  },
-  errors: {
-    exportDiagramPng: "Erreur lors de l'exportation du diagramme en PNG",
-    copyXml: 'Erreur lors de la copie du XML',
-    xmlParsing: "Impossible d'analyser le diagramme BPMN",
-    cannotGetCanvas: "Impossible d'obtenir le contexte du canevas",
-    cannotCreateBlob: 'Impossible de créer le blob',
   },
 } as const;

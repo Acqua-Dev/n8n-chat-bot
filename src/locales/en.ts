@@ -95,6 +95,11 @@ export default {
     notFoundDescription: 'The page you are looking for does not exist.',
     unauthorized: 'Unauthorized',
     unauthorizedDescription: 'You are not authorized to access this page.',
+    exportDiagramPng: 'Error exporting diagram as PNG',
+    copyXml: 'Error copying XML',
+    xmlParsing: 'Failed to parse BPMN diagram',
+    cannotGetCanvas: 'Could not get canvas context',
+    cannotCreateBlob: 'Could not create blob',
   },
   auth: {
     title: {
@@ -249,12 +254,5 @@ export default {
     copyXml: 'Copy XML',
     loadingDiagram: 'Loading diagram...',
     diagramError: 'Diagram Error',
-  },
-  errors: {
-    exportDiagramPng: 'Error exporting diagram as PNG',
-    copyXml: 'Error copying XML',
-    xmlParsing: 'Failed to parse BPMN diagram',
-    cannotGetCanvas: 'Could not get canvas context',
-    cannotCreateBlob: 'Could not create blob',
   },
 } as const;
