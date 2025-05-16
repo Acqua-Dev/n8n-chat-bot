@@ -82,8 +82,8 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
             {showDiagram ? (
               <BpmnDiagram xml={bpmnXml} />
             ) : (
-              <div className="bpmn-container bg-white rounded-md border border-gray-300 h-[400px] max-w-full overflow-y-auto">
-                <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded-md overflow-x-auto text-xs w-full max-w-full break-words whitespace-pre-wrap">
+              <div className="bg-white rounded-md border border-gray-300 h-[400px] max-w-full overflow-auto">
+                <pre className="p-3 text-xs min-w-min">
                   <code
                     dangerouslySetInnerHTML={{ __html: formatXml(bpmnXml) }}
                   />
