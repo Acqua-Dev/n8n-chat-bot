@@ -152,60 +152,60 @@
 }
 
 .dark {
-  /* ---- Dark mode using chat colors ---- */
+  /* ---- Dark mode using same colors as light mode ---- */
 
-  /* Base colors - using deep ocean as background */
-  --background: #002A5C; /* chat-deep-ocean */
-  --foreground: #FFFFFF; /* chat-white */
+  /* Base colors - same as light mode */
+  --background: #FFFFFF; /* chat-white */
+  --foreground: #2A3A4D; /* chat-grey5 */
 
-  /* Card colors */
-  --card: #001D66; /* chat-water-blue */
-  --card-foreground: #FFFFFF; /* chat-white */
+  /* Card colors - same as light mode */
+  --card: #FFFFFF; /* chat-white */
+  --card-foreground: #2A3A4D; /* chat-grey5 */
 
-  /* Popover colors */
-  --popover: #001D66; /* chat-water-blue */
-  --popover-foreground: #FFFFFF; /* chat-white */
+  /* Popover colors - same as light mode */
+  --popover: #FFFFFF; /* chat-white */
+  --popover-foreground: #2A3A4D; /* chat-grey5 */
 
-  /* Primary colors - inverting light mode */
-  --primary: #8E9DC5; /* chat-clear-blue */
-  --primary-foreground: #001D66; /* chat-water-blue */
+  /* Primary colors - same as light mode */
+  --primary: #001D66; /* chat-water-blue */
+  --primary-foreground: #FFFFFF; /* chat-white */
 
-  /* Secondary colors */
-  --secondary: #2A3A4D; /* chat-grey5 */
-  --secondary-foreground: #D3D9E8; /* chat-grey2 */
+  /* Secondary colors - same as light mode */
+  --secondary: #EAEEF8; /* chat-sky */
+  --secondary-foreground: #001D66; /* chat-water-blue */
 
-  /* Muted colors */
-  --muted: #2A3A4D; /* chat-grey5 */
-  --muted-foreground: #8A99B0; /* chat-grey4 */
+  /* Muted colors - same as light mode */
+  --muted: #F6F8FA; /* lighter muted background */
+  --muted-foreground: #6B7280; /* more neutral grey */
 
-  /* Accent colors */
-  --accent: #001D66; /* chat-water-blue */
-  --accent-foreground: #FFFFFF; /* chat-white */
+  /* Accent colors - same as light mode */
+  --accent: #F9F3E3; /* chat-dawn */
+  --accent-foreground: #002A5C; /* chat-deep-ocean */
 
-  /* Destructive action colors */
-  --destructive: #FF7F6E; /* chat-coral, kept similar to light mode */
+  /* Destructive action colors - same as light mode */
+  --destructive: #FF7F6E; /* chat-coral */
   --destructive-foreground: #FFFFFF; /* chat-white */
 
-  /* Border, input and ring colors */
-  --border: #8A99B0; /* chat-grey4 */
-  --input: rgba(255, 255, 255, 0.15); /* semi-transparent white */
+  /* Border, input and ring colors - same as light mode */
+  --border: #D3D9E8; /* chat-grey2 */
+  --input: #D3D9E8; /* chat-grey2 */
   --ring: #8E9DC5; /* chat-clear-blue */
 
-  /* Chart colors - more vibrant in dark mode */
-  --chart-1: #8E9DC5; /* chat-clear-blue */
-  --chart-2: #D9E9DF; /* chat-jade */
-  --chart-3: #FF7F6E; /* chat-coral */
+  /* Chart colors - same as light mode */
+  --chart-1: #001D66; /* chat-water-blue */
+  --chart-2: #8E9DC5; /* chat-clear-blue */
+  --chart-3: #D9E9DF; /* chat-jade */
   --chart-4: #F9F3E3; /* chat-dawn */
-  --chart-5: #EAEEF8; /* chat-sky */
+  --chart-5: #FF7F6E; /* chat-coral */
 
-  /* Sidebar colors */
-  --sidebar: #001D66; /* chat-water-blue */
-  --sidebar-foreground: #FFFFFF; /* chat-white */
-  --sidebar-primary: #8E9DC5; /* chat-clear-blue */
+  /* Sidebar colors - same as light mode */
+  --sidebar: #FFFFFF; /* chat-white */
+  --sidebar-foreground: #2A3A4D; /* chat-grey5 */
+  --sidebar-primary: #001D66; /* chat-water-blue */
   --sidebar-primary-foreground: #FFFFFF; /* chat-white */
-  --sidebar-accent: #002A5C; /* chat-deep-ocean */
-  --sidebar-accent-foreground: #FFFFFF; /* chat-white */
-  --sidebar-border: rgba(255, 255, 255, 0.1); /* semi-transparent white */
+  --sidebar-accent: #EAEEF8; /* chat-sky */
+  --sidebar-accent-foreground: #001D66; /* chat-water-blue */
+  --sidebar-border: #D3D9E8; /* chat-grey2 */
   --sidebar-ring: #8E9DC5; /* chat-clear-blue */
 }
 
