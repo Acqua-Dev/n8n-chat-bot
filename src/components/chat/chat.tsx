@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChatMessage, ChatMode } from './types';
 import { useN8nChat } from './use-n8n-chat';
+import { useChatStore } from '@/store/chat-store';
 import ChatFooter from '@/components/chat/components/ChatFooter';
 import ChatHeader from '@/components/chat/components/ChatHeader';
 import ChatMessages from '@/components/chat/components/ChatMessages';
@@ -17,6 +19,7 @@ import { CHAT_CONFIG } from './constants';
 interface ChatProps {
   mode: ChatMode;
   webhookUrl: string;
+  sessionId: string;
   initialMessages?: string[];
   allowFileUploads?: boolean;
   title?: string;
@@ -30,6 +33,7 @@ interface ChatProps {
 export default function Chat({
   mode,
   webhookUrl,
+  sessionId: initialSessionId,
   initialMessages = [],
   allowFileUploads = true,
   title,
@@ -39,22 +43,55 @@ export default function Chat({
   thinkingText,
 }: ChatProps) {
   const t = useI18n();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMinimized, setIsMinimized] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [readySessionId, setReadySessionId] = useState<string | null>(null);
+  const { getSessionId, getWebhookBySessionId, setSession } = useChatStore();
+  const hasProcessedSessionId = useRef(false);
+
+  useEffect(() => {
+    if (!initialSessionId || hasProcessedSessionId.current) return;
+
+    hasProcessedSessionId.current = true;
+
+    const existingWebhookUrl = getWebhookBySessionId(initialSessionId);
+
+    if (existingWebhookUrl && existingWebhookUrl !== webhookUrl) {
+      const newSessionId = getSessionId(webhookUrl);
+
+      const queryString = searchParams.toString();
+      router.replace(`/${newSessionId}${queryString ? `?${queryString}` : ''}`);
+
+      setReadySessionId(newSessionId);
+    } else if (!existingWebhookUrl) {
+      setSession(webhookUrl, initialSessionId);
+      setReadySessionId(initialSessionId);
+    } else {
+      setReadySessionId(initialSessionId);
+    }
+  }, [
+    initialSessionId,
+    webhookUrl,
+    getSessionId,
+    getWebhookBySessionId,
+    setSession,
+    searchParams,
+    router,
+  ]);
 
   const {
     sendMessage,
     isLoading,
     error,
     setError,
-    clearSession,
     sessionId,
     isError,
     validateWebhookUrl,
-  } = useN8nChat(webhookUrl);
+  } = useN8nChat(webhookUrl, readySessionId);
 
-  // Set default values with i18n
   const displayTitle = title || t('chat.title');
   const displayFooter = footer || t('chat.footer');
   const displayInputPlaceholder =
@@ -63,14 +100,10 @@ export default function Chat({
   const displayThinkingText = thinkingText || t('chat.messages.thinking');
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Chat: Session ID:', sessionId);
-    }
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (!isInitialized && typeof window !== 'undefined') {
-      const savedMessages = localStorage.getItem(`chat-messages-${webhookUrl}`);
+    if (readySessionId && !isInitialized) {
+      const savedMessages = localStorage.getItem(
+        `chat-messages-${webhookUrl}-${readySessionId}`,
+      );
 
       if (savedMessages) {
         try {
@@ -78,11 +111,11 @@ export default function Chat({
           setMessages(parsedMessages);
         } catch (err) {
           console.error('Error parsing saved messages:', err);
-          localStorage.removeItem(`chat-messages-${webhookUrl}`);
+          localStorage.removeItem(
+            `chat-messages-${webhookUrl}-${readySessionId}`,
+          );
         }
-      }
-
-      if (messages.length === 0 && initialMessages.length > 0) {
+      } else if (initialMessages.length > 0) {
         const initialChatMessages: ChatMessage[] = initialMessages.map(
           (msg, index) => ({
             id: uuidv4(),
@@ -98,10 +131,15 @@ export default function Chat({
 
       setIsInitialized(true);
     }
-  }, [initialMessages, webhookUrl, isInitialized, messages.length]);
+  }, [readySessionId, webhookUrl, initialMessages, isInitialized]);
 
   useEffect(() => {
-    if (isInitialized && typeof window !== 'undefined' && messages.length > 0) {
+    if (
+      isInitialized &&
+      typeof window !== 'undefined' &&
+      messages.length > 0 &&
+      readySessionId
+    ) {
       const messagesToStore =
         messages.length > CHAT_CONFIG.MAX_STORED_MESSAGES
           ? messages.slice(-CHAT_CONFIG.MAX_STORED_MESSAGES)
@@ -109,32 +147,37 @@ export default function Chat({
 
       try {
         localStorage.setItem(
-          `chat-messages-${webhookUrl}`,
+          `chat-messages-${webhookUrl}-${readySessionId}`,
           JSON.stringify(messagesToStore),
         );
       } catch (err) {
         console.error('Error saving messages to localStorage:', err);
       }
     }
-  }, [messages, webhookUrl, isInitialized]);
+  }, [messages, webhookUrl, readySessionId, isInitialized]);
+
+  const handleNewChat = useCallback(() => {
+    const { createSession } = useChatStore.getState();
+    const newSessionId = createSession(webhookUrl);
+
+    const urlParams = new URLSearchParams(searchParams);
+    const queryString = urlParams.toString();
+    router.push(`/${newSessionId}${queryString ? `?${queryString}` : ''}`);
+  }, [webhookUrl, router, searchParams]);
 
   const clearChatHistory = useCallback(() => {
     setMessages([]);
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && readySessionId) {
       try {
-        localStorage.removeItem(`chat-messages-${webhookUrl}`);
+        localStorage.removeItem(
+          `chat-messages-${webhookUrl}-${readySessionId}`,
+        );
       } catch (err) {
         console.error('Error clearing chat history:', err);
       }
     }
-
-    clearSession();
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Chat history cleared with new session');
-    }
-  }, [clearSession, webhookUrl]);
+  }, [webhookUrl, readySessionId]);
 
   const handleSubmit = useCallback(
     async (inputMessage: string, selectedFiles: File[]) => {
@@ -214,6 +257,7 @@ export default function Chat({
           messagesCount={messages.length}
           onClose={mode === 'window' ? () => setIsMinimized(true) : undefined}
           isWindowMode={mode === 'window'}
+          onNewChat={handleNewChat}
         />
 
         <div className="relative flex-1 flex flex-col overflow-hidden">
@@ -269,28 +313,32 @@ export default function Chat({
     );
   };
 
-  if (!isInitialized) {
-    return <></>;
-  }
-
-  if (mode === 'window' && isMinimized) {
-    return <ChatBubble onClick={() => setIsMinimized(false)} />;
-  }
-
-  if (mode === 'window' && !isMinimized) {
+  if (!isInitialized || !readySessionId) {
     return (
-      <ChatWindow
-        isOpen={!isMinimized}
-        onClickOutside={() => setIsMinimized(true)}
-      >
-        {renderChatContent()}
-      </ChatWindow>
+      <div className="h-full w-full flex items-center justify-center">
+        <div className="text-center">
+          <p>Initializing chat...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden w-full">
-      {renderChatContent()}
-    </div>
+    <>
+      {mode === 'window' && isMinimized ? (
+        <ChatBubble onClick={() => setIsMinimized(false)} />
+      ) : mode === 'window' && !isMinimized ? (
+        <ChatWindow
+          isOpen={!isMinimized}
+          onClickOutside={() => setIsMinimized(true)}
+        >
+          {renderChatContent()}
+        </ChatWindow>
+      ) : (
+        <div className="flex flex-col h-full overflow-hidden w-full">
+          {renderChatContent()}
+        </div>
+      )}
+    </>
   );
 }

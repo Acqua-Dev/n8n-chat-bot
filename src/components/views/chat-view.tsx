@@ -8,12 +8,13 @@ const Chat = dynamic(() => import('@/components/chat/chat'), {
 
 interface ChatViewProps {
   webhookUrl: string;
+  sessionId: string;
 }
 
-export default function ChatView({ webhookUrl }: ChatViewProps) {
+export default function ChatView({ webhookUrl, sessionId }: ChatViewProps) {
   return (
     <div className="h-screen overflow-hidden">
-      <Chat mode="fullscreen" webhookUrl={webhookUrl} />
+      <Chat mode="fullscreen" webhookUrl={webhookUrl} sessionId={sessionId} />
     </div>
   );
 }

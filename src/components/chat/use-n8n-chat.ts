@@ -3,26 +3,32 @@
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, ApiRequestPayload, ApiResponsePayload } from './types';
+import { useChatStore } from '@/store/chat-store';
 
-export function useN8nChat(webhookUrl: string) {
+export function useN8nChat(
+  webhookUrl: string,
+  providedSessionId?: string | null,
+) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const {
+    getSessionId,
+    updateSession,
+    clearSession: clearStoreSession,
+  } = useChatStore();
   const [sessionId, setSessionId] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const existingSession = localStorage.getItem(
-        `chat-session-${webhookUrl}`,
-      );
-      if (existingSession) {
-        return existingSession;
-      }
-
-      const newSessionId = uuidv4();
-      localStorage.setItem(`chat-session-${webhookUrl}`, newSessionId);
-      return newSessionId;
+    if (providedSessionId) {
+      return providedSessionId;
     }
-    return uuidv4();
+    return getSessionId(webhookUrl);
   });
+
+  useEffect(() => {
+    if (providedSessionId) {
+      setSessionId(providedSessionId);
+    }
+  }, [providedSessionId]);
 
   const validateWebhookUrl = useCallback(async (): Promise<boolean> => {
     if (!webhookUrl) {
@@ -119,14 +125,8 @@ export function useN8nChat(webhookUrl: string) {
         let currentSessionId = sessionId;
 
         if (!currentSessionId) {
-          currentSessionId = uuidv4();
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(
-              `chat-session-${webhookUrl}`,
-              currentSessionId,
-            );
-            setSessionId(currentSessionId);
-          }
+          currentSessionId = getSessionId(webhookUrl);
+          setSessionId(currentSessionId);
         }
 
         const payload: ApiRequestPayload = {
@@ -201,10 +201,7 @@ export function useN8nChat(webhookUrl: string) {
 
         if (data.sessionId) {
           setSessionId(data.sessionId);
-
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(`chat-session-${webhookUrl}`, data.sessionId);
-          }
+          updateSession(webhookUrl, data.sessionId);
         }
 
         if (data.error) {
@@ -263,16 +260,22 @@ export function useN8nChat(webhookUrl: string) {
         return null;
       }
     },
-    [webhookUrl, sessionId, error, validateWebhookUrl],
+    [
+      webhookUrl,
+      sessionId,
+      error,
+      validateWebhookUrl,
+      getSessionId,
+      updateSession,
+    ],
   );
 
   const clearSession = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      const newSessionId = uuidv4();
-      localStorage.setItem(`chat-session-${webhookUrl}`, newSessionId);
-      setSessionId(newSessionId);
-    }
-  }, [webhookUrl]);
+    clearStoreSession(webhookUrl);
+    const newSessionId = getSessionId(webhookUrl);
+    setSessionId(newSessionId);
+    return newSessionId;
+  }, [webhookUrl, clearStoreSession, getSessionId]);
 
   const isError = !!error;
 

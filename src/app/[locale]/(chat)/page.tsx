@@ -1,5 +1,5 @@
-import ChatView from '@/components/views/chat-view';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
   searchParams: Promise<{
@@ -8,18 +8,17 @@ interface Props {
   }>;
 }
 
-export default async function ChatPage({ searchParams }: Props) {
+export default async function ChatRedirectPage({ searchParams }: Props) {
   const { webhookUrl, id } = await searchParams;
 
-  if (!webhookUrl && !id) {
-    return notFound();
-  }
+  const sessionId = uuidv4();
 
-  const url = webhookUrl || `${process.env.N8N_BASE_URL}/webhook/${id}/chat`;
+  const urlParams = new URLSearchParams();
+  if (webhookUrl) urlParams.set('webhookUrl', webhookUrl);
+  if (id) urlParams.set('id', id);
 
-  return (
-    <div className="h-full">
-      <ChatView webhookUrl={url} />
-    </div>
-  );
+  const queryString = urlParams.toString();
+  const redirectUrl = `/${sessionId}${queryString ? `?${queryString}` : ''}`;
+
+  redirect(redirectUrl);
 }
