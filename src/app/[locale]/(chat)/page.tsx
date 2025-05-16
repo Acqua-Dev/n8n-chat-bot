@@ -9,8 +9,19 @@ export default function ChatRedirectPage() {
   const id = searchParams.get('id');
   const { createSession } = useChatStore();
 
-  const url =
-    webhookUrl || `${process.env.NEXT_PUBLIC_N8N_BASE_URL}/webhook/${id}/chat`;
+  let url: string = '';
+
+  if (webhookUrl) {
+    url = webhookUrl;
+  } else if (id && process.env.NEXT_PUBLIC_N8N_BASE_URL) {
+    url = `${process.env.NEXT_PUBLIC_N8N_BASE_URL}/webhook/${id}/chat`;
+  }
+
+  if (!url) {
+    console.error('No valid URL could be constructed');
+    return <div>Error: No webhook URL available</div>;
+  }
+
   const newSessionId = createSession(url);
 
   redirect(`/${newSessionId}?webhookUrl=${url}`);

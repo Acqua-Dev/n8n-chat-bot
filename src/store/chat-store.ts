@@ -55,30 +55,49 @@ export const useChatStore = create<ChatStore>()(
       },
 
       createSession: (webhookUrl: string) => {
+        // Debug: Check what's being passed as webhookUrl
+        if (typeof webhookUrl !== 'string') {
+          console.error(
+            'Invalid webhookUrl type:',
+            typeof webhookUrl,
+            webhookUrl,
+          );
+          throw new Error('webhookUrl must be a string');
+        }
+
         const newSessionId = uuidv4();
         const now = new Date().toISOString();
 
         set((state) => {
-          const existingSessions = state.sessions[webhookUrl] || [];
+          try {
+            // Ensure webhookUrl is a string and can be used as an object key
+            const urlKey = String(webhookUrl);
+            const existingSessions = state.sessions[urlKey] || [];
 
-          return {
-            sessions: {
-              ...state.sessions,
-              [webhookUrl]: [
-                ...existingSessions,
-                {
-                  sessionId: newSessionId,
-                  webhookUrl,
-                  createdAt: now,
-                  updatedAt: now,
-                },
-              ],
-            },
-            sessionIdToWebhook: {
-              ...state.sessionIdToWebhook,
-              [newSessionId]: webhookUrl,
-            },
-          };
+            return {
+              sessions: {
+                ...state.sessions,
+                [urlKey]: [
+                  ...existingSessions,
+                  {
+                    sessionId: newSessionId,
+                    webhookUrl: urlKey,
+                    createdAt: now,
+                    updatedAt: now,
+                  },
+                ],
+              },
+              sessionIdToWebhook: {
+                ...state.sessionIdToWebhook,
+                [newSessionId]: urlKey,
+              },
+            };
+          } catch (error) {
+            console.error('Error in createSession set:', error);
+            console.error('webhookUrl value:', webhookUrl);
+            console.error('webhookUrl type:', typeof webhookUrl);
+            throw error;
+          }
         });
 
         return newSessionId;
@@ -148,27 +167,32 @@ export const useChatStore = create<ChatStore>()(
       },
 
       getAllSessions: () => {
-        const allSessions = get().sessions;
-        const flatSessions: ChatSession[] = [];
+        try {
+          const allSessions = get().sessions;
+          const flatSessions: ChatSession[] = [];
 
-        Object.values(allSessions).forEach((sessionData) => {
-          // Check if it's already an array or needs migration from old format
-          if (Array.isArray(sessionData)) {
-            flatSessions.push(...sessionData);
-          } else if (
-            sessionData &&
-            typeof sessionData === 'object' &&
-            'sessionId' in sessionData
-          ) {
-            // Migrate from old single session format
-            flatSessions.push(sessionData as ChatSession);
-          }
-        });
+          Object.values(allSessions).forEach((sessionData) => {
+            // Check if it's already an array or needs migration from old format
+            if (Array.isArray(sessionData)) {
+              flatSessions.push(...sessionData);
+            } else if (
+              sessionData &&
+              typeof sessionData === 'object' &&
+              'sessionId' in sessionData
+            ) {
+              // Migrate from old single session format
+              flatSessions.push(sessionData as ChatSession);
+            }
+          });
 
-        return flatSessions.sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-        );
+          return flatSessions.sort(
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          );
+        } catch (error) {
+          console.error('Error in getAllSessions:', error);
+          return [];
+        }
       },
 
       getSessionsByWebhook: (webhookUrl: string) => {

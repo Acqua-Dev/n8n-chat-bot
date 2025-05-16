@@ -43,28 +43,30 @@ function MainContent({
   const { open } = useSidebar();
 
   return (
-    <div className="relative w-full">
-      <div className="absolute top-3 left-3 z-50 flex items-center gap-2">
-        <SidebarTrigger />
-        {!open && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleNewChat}
-            className="h-8 w-8"
-          >
-            <SquarePen className="h-4 w-4" />
-          </Button>
-        )}
-        <Image
-          src="/logo_dark.png"
-          alt="Logo"
-          width={160}
-          height={50}
-          className="h-6 w-auto"
-        />
+    <div className="relative w-full h-full flex flex-col">
+      <div className="sticky top-0 left-0 z-50 bg-background/95 backdrop-blur-sm p-3 border-b">
+        <div className="flex items-center gap-2">
+          <SidebarTrigger />
+          {!open && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleNewChat()}
+              className="h-8 w-8"
+            >
+              <SquarePen className="h-4 w-4" />
+            </Button>
+          )}
+          <Image
+            src="/logo_dark.png"
+            alt="Logo"
+            width={160}
+            height={50}
+            className="h-6 w-auto"
+          />
+        </div>
       </div>
-      {children}
+      <div className="flex-1 overflow-hidden">{children}</div>
     </div>
   );
 }
@@ -91,11 +93,25 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
   };
 
   const handleNewChat = (url?: string) => {
+    // Make sure we handle event objects being passed
+    if (url && typeof url !== 'string') {
+      console.error('Invalid URL passed to handleNewChat:', url);
+      url = undefined;
+    }
+
     const webhookUrl = url || sessions[0]?.webhookUrl || '';
 
-    const newSessionId = createSession(webhookUrl);
+    if (!webhookUrl || typeof webhookUrl !== 'string') {
+      console.error('No valid webhook URL available for new chat');
+      return;
+    }
 
-    router.push(`/${newSessionId}?webhookUrl=${webhookUrl}`);
+    try {
+      const newSessionId = createSession(webhookUrl);
+      router.push(`/${newSessionId}?webhookUrl=${webhookUrl}`);
+    } catch (error) {
+      console.error('Error creating new session:', error);
+    }
   };
 
   const handleDeleteSession = (sessionId: string) => {
@@ -135,83 +151,85 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
 
   return (
     <SidebarProvider defaultOpen={false}>
-      <Sidebar className="border-r">
-        <SidebarHeader className="border-b px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/logo_small.png"
-                alt="Chat logo"
-                width="24"
-                height="24"
-              />
-              <span className="font-semibold">Chat History</span>
+      <div className="flex h-screen w-full">
+        <Sidebar className="border-r flex-shrink-0">
+          <SidebarHeader className="border-b px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/logo_small.png"
+                  alt="Chat logo"
+                  width="24"
+                  height="24"
+                />
+                <span className="font-semibold">Chat History</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleNewChat()}
+                className="h-8 w-8"
+              >
+                <SquarePen className="h-4 w-4" />
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleNewChat()}
-              className="h-8 w-8"
-            >
-              <SquarePen className="h-4 w-4" />
-            </Button>
-          </div>
-        </SidebarHeader>
+          </SidebarHeader>
 
-        <SidebarContent>
-          <ScrollArea className="h-full">
-            <SidebarMenu className="p-2">
-              {sessions.map((session) => (
-                <SidebarMenuItem key={session.sessionId}>
-                  <SidebarMenuButton
-                    className={
-                      currentSessionId === session.sessionId ? 'bg-muted' : ''
-                    }
-                    onClick={() => handleSessionClick(session.sessionId)}
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                    <div className="flex-1 text-left">
-                      <div>{getSessionTitle(session)}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(session.updatedAt), {
-                          addSuffix: true,
-                        })}
+          <SidebarContent>
+            <ScrollArea className="h-full">
+              <SidebarMenu className="p-2">
+                {sessions.map((session) => (
+                  <SidebarMenuItem key={session.sessionId}>
+                    <SidebarMenuButton
+                      className={
+                        currentSessionId === session.sessionId ? 'bg-muted' : ''
+                      }
+                      onClick={() => handleSessionClick(session.sessionId)}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      <div className="flex-1 text-left">
+                        <div>{getSessionTitle(session)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(session.updatedAt), {
+                            addSuffix: true,
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  </SidebarMenuButton>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <SidebarMenuAction>
-                        <MoreHorizontal className="h-3 w-3" />
-                      </SidebarMenuAction>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSession(session.sessionId);
-                        }}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </ScrollArea>
-        </SidebarContent>
+                    </SidebarMenuButton>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction>
+                          <MoreHorizontal className="h-3 w-3" />
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSession(session.sessionId);
+                          }}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </ScrollArea>
+          </SidebarContent>
 
-        <SidebarFooter className="border-t p-4">
-          <div className="text-xs text-muted-foreground text-center">
-            {sessions.length} conversation{sessions.length !== 1 ? 's' : ''}
-          </div>
-        </SidebarFooter>
-      </Sidebar>
+          <SidebarFooter className="border-t p-4">
+            <div className="text-xs text-muted-foreground text-center">
+              {sessions.length} conversation{sessions.length !== 1 ? 's' : ''}
+            </div>
+          </SidebarFooter>
+        </Sidebar>
 
-      <MainContent handleNewChat={handleNewChat}>{children}</MainContent>
+        <MainContent handleNewChat={handleNewChat}>{children}</MainContent>
+      </div>
     </SidebarProvider>
   );
 }

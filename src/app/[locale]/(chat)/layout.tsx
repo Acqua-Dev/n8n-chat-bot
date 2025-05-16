@@ -10,7 +10,7 @@ interface Props {
 export default function ChatLayout({ children }: Props) {
   return (
     <ChatSidebar>
-      <main className="flex-1">{children}</main>
+      <main className="h-full">{children}</main>
     </ChatSidebar>
   );
 }

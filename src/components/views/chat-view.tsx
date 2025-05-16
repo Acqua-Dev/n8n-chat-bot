@@ -13,7 +13,7 @@ interface ChatViewProps {
 
 export default function ChatView({ webhookUrl, sessionId }: ChatViewProps) {
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="h-full overflow-hidden">
       <Chat mode="fullscreen" webhookUrl={webhookUrl} sessionId={sessionId} />
     </div>
   );
