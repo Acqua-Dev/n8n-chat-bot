@@ -15,6 +15,7 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { Download, Copy } from 'lucide-react';
+import { useI18n } from '@/utils/localization/client';
 
 interface BpmnDiagramProps {
   xml: string;
@@ -25,6 +26,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
   const [bpmnViewer, setBpmnViewer] = useState<BpmnModeler | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useI18n();
 
   const exportAsPNG = async () => {
     if (!bpmnViewer) return;
@@ -41,7 +43,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
         const ctx = canvas.getContext('2d');
 
         if (!ctx) {
-          console.error('Could not get canvas context');
+          console.error(t('errors.cannotGetCanvas'));
           URL.revokeObjectURL(url);
           return;
         }
@@ -56,7 +58,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
 
         canvas.toBlob((blob) => {
           if (!blob) {
-            console.error('Could not create blob');
+            console.error(t('errors.cannotCreateBlob'));
             return;
           }
 
@@ -76,7 +78,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
 
       image.src = url;
     } catch (error) {
-      console.error('Error exporting diagram as PNG:', error);
+      console.error(t('errors.exportDiagramPng'), error);
     }
   };
 
@@ -86,7 +88,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
     try {
       await navigator.clipboard.writeText(xml);
     } catch (error) {
-      console.error('Error copying XML:', error);
+      console.error(t('errors.copyXml'), error);
     }
   };
 
@@ -136,7 +138,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
           message: err.message,
           stack: err.stack,
         });
-        setError(err.message || 'Failed to parse BPMN diagram');
+        setError(err.message || t('errors.xmlParsing'));
         setLoading(false);
       }
     };
@@ -166,7 +168,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Export as PNG</p>
+              <p>{t('bpmn.exportPng')}</p>
             </TooltipContent>
           </Tooltip>
 
@@ -183,7 +185,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Copy XML</p>
+              <p>{t('bpmn.copyXml')}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -193,7 +195,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
             <div className="flex flex-col items-center gap-2">
               <Spinner size="lg" />
               <span className="text-sm text-muted-foreground">
-                Loading diagram...
+                {t('bpmn.loadingDiagram')}
               </span>
             </div>
           </div>
@@ -202,7 +204,7 @@ export default function BpmnDiagram({ xml }: BpmnDiagramProps) {
         {error && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/80">
             <div className="bg-destructive/10 text-destructive p-4 rounded-md max-w-md m-4">
-              <h3 className="font-bold mb-2">Diagram Error</h3>
+              <h3 className="font-bold mb-2">{t('bpmn.diagramError')}</h3>
               <p className="text-sm">{error}</p>
             </div>
           </div>

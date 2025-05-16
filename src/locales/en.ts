@@ -240,4 +240,21 @@ export default {
   footer: {
     copyright: 'Acqua AI. All rights reserved.',
   },
+  bpmn: {
+    diagram: 'BPMN Diagram',
+    xml: 'BPMN XML',
+    showXml: 'Show XML',
+    showDiagram: 'Show Diagram',
+    exportPng: 'Export as PNG',
+    copyXml: 'Copy XML',
+    loadingDiagram: 'Loading diagram...',
+    diagramError: 'Diagram Error',
+  },
+  errors: {
+    exportDiagramPng: 'Error exporting diagram as PNG',
+    copyXml: 'Error copying XML',
+    xmlParsing: 'Failed to parse BPMN diagram',
+    cannotGetCanvas: 'Could not get canvas context',
+    cannotCreateBlob: 'Could not create blob',
+  },
 } as const;

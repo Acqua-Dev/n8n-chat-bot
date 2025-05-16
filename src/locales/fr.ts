@@ -245,4 +245,21 @@ export default {
   footer: {
     copyright: 'Acqua AI. Tous droits réservés.',
   },
+  bpmn: {
+    diagram: 'Diagramme BPMN',
+    xml: 'XML BPMN',
+    showXml: 'Afficher le XML',
+    showDiagram: 'Afficher le diagramme',
+    exportPng: 'Exporter en PNG',
+    copyXml: 'Copier le XML',
+    loadingDiagram: 'Chargement du diagramme...',
+    diagramError: 'Erreur de diagramme',
+  },
+  errors: {
+    exportDiagramPng: "Erreur lors de l'exportation du diagramme en PNG",
+    copyXml: 'Erreur lors de la copie du XML',
+    xmlParsing: "Impossible d'analyser le diagramme BPMN",
+    cannotGetCanvas: "Impossible d'obtenir le contexte du canevas",
+    cannotCreateBlob: 'Impossible de créer le blob',
+  },
 } as const;

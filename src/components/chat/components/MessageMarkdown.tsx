@@ -10,6 +10,7 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { Code, FileCode } from 'lucide-react';
+import { useI18n } from '@/utils/localization/client';
 
 export interface MessageMarkdownProps {
   content: string;
@@ -18,6 +19,7 @@ export interface MessageMarkdownProps {
 export function MessageMarkdown({ content }: MessageMarkdownProps) {
   const [bpmnXml, setBpmnXml] = useState<string | null>(null);
   const [showDiagram, setShowDiagram] = useState<boolean>(true);
+  const t = useI18n();
 
   useEffect(() => {
     try {
@@ -53,7 +55,7 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
         <div className="border rounded-md mb-4 overflow-hidden max-w-full">
           <div className="bg-gray-100 dark:bg-gray-800 p-2 flex justify-between items-center border-b">
             <div className="font-medium">
-              {showDiagram ? 'BPMN Diagram' : 'BPMN XML'}
+              {showDiagram ? t('bpmn.diagram') : t('bpmn.xml')}
             </div>
             <div className="flex gap-2">
               <Tooltip>
@@ -72,7 +74,9 @@ export function MessageMarkdown({ content }: MessageMarkdownProps) {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{showDiagram ? 'Show XML' : 'Show Diagram'}</p>
+                  <p>
+                    {showDiagram ? t('bpmn.showXml') : t('bpmn.showDiagram')}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </div>
