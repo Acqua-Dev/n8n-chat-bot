@@ -27,12 +27,12 @@ import {
 import { SquarePen, MessageSquare, MoreHorizontal, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
+import { cn } from '@/utils/ui/utils';
 
 interface ChatSidebarProps {
   children?: ReactNode;
 }
 
-// Separate component to use the sidebar context
 function MainContent({
   children,
   handleNewChat,
@@ -198,20 +198,25 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
                 {sessions.map((session) => (
                   <SidebarMenuItem key={session.sessionId}>
                     <SidebarMenuButton
-                      className={
-                        currentSessionId === session.sessionId ? 'bg-muted' : ''
-                      }
+                      className={cn(
+                        'w-full',
+                        currentSessionId === session.sessionId
+                          ? 'bg-muted'
+                          : '',
+                      )}
                       onClick={() => handleSessionClick(session.sessionId)}
                     >
-                      <MessageSquare className="h-4 w-4" />
-                      <div className="flex-1 text-left">
-                        <div>{getSessionTitle(session)}</div>
-                        <div className="text-xs text-muted-foreground">
+                      <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1 min-w-0 flex flex-col text-left overflow-hidden">
+                        <span className="truncate max-w-2/3">
+                          {getSessionTitle(session)}
+                        </span>
+                        <span className="text-xs text-muted-foreground truncate">
                           {formatDistanceToNow(new Date(session.updatedAt), {
                             addSuffix: true,
                           })}
-                        </div>
-                      </div>
+                        </span>
+                      </span>
                     </SidebarMenuButton>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
