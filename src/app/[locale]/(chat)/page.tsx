@@ -1,6 +1,6 @@
 'use client';
 
-import { redirect, useSearchParams } from 'next/navigation';
+import { notFound, redirect, useSearchParams } from 'next/navigation';
 import { useChatStore } from '@/store/chat-store';
 
 export default function ChatRedirectPage() {
@@ -19,7 +19,7 @@ export default function ChatRedirectPage() {
 
   if (!url) {
     console.error('No valid URL could be constructed');
-    return <div>Error: No webhook URL available</div>;
+    notFound();
   }
 
   const newSessionId = createSession(url);
