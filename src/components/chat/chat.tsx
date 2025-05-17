@@ -246,7 +246,7 @@ export default function Chat({
 
     return (
       <>
-        <div className="relative flex-1 flex flex-col overflow-hidden">
+        <div className="flex flex-col h-full overflow-hidden">
           {isError && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <div className="bg-destructive/10 text-destructive p-4 rounded-md max-w-md m-4">
@@ -285,7 +285,7 @@ export default function Chat({
             />
           </div>
 
-          <div className="sticky bottom-0">
+          <div className="flex-shrink-0">
             <ChatInput
               onSubmit={handleSubmit}
               isLoading={isLoading}
@@ -321,7 +321,7 @@ export default function Chat({
           {renderChatContent()}
         </ChatWindow>
       ) : (
-        <div className="flex flex-col h-full overflow-hidden w-full">
+        <div className="flex flex-col h-full overflow-hidden w-full relative">
           {renderChatContent()}
         </div>
       )}

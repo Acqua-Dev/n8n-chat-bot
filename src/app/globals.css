@@ -219,6 +219,16 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Mobile-specific fixes for Chrome */
+  @media (max-width: 768px) {
+    html {
+      height: -webkit-fill-available;
+    }
+    body {
+      min-height: -webkit-fill-available;
+    }
+  }
 }
 
 /* Custom animations for chat window */

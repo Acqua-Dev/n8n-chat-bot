@@ -44,7 +44,7 @@ function MainContent({
 
   return (
     <div className="relative w-full h-full flex flex-col">
-      <div className="sticky top-0 left-0 z-50 bg-background/95 backdrop-blur-sm p-3 border-b">
+      <div className="sticky top-0 left-0 z-50 bg-background/95 backdrop-blur-sm p-3">
         <div className="flex items-center gap-2">
           <SidebarTrigger />
           {!open && (

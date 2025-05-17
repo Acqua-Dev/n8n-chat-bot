@@ -91,7 +91,7 @@ export default function ChatInput({
   const canSubmit = hasContent && !isDisabled;
 
   return (
-    <div className="px-4 py-4">
+    <div className="px-4 py-4 pb-safe bg-background">
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
         <div className="relative">
           <Textarea
