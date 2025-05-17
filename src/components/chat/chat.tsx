@@ -46,8 +46,12 @@ export default function Chat({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [readySessionId, setReadySessionId] = useState<string | null>(null);
-  const { getSessionId, getWebhookBySessionId, setSession, updateSessionInfo } =
-    useChatStore();
+  const {
+    getMostRecentSession,
+    getWebhookBySessionId,
+    setSession,
+    updateSessionInfo,
+  } = useChatStore();
   const hasProcessedSessionId = useRef(false);
 
   useEffect(() => {
@@ -58,12 +62,20 @@ export default function Chat({
     const existingWebhookUrl = getWebhookBySessionId(initialSessionId);
 
     if (existingWebhookUrl && existingWebhookUrl !== webhookUrl) {
-      const newSessionId = getSessionId(webhookUrl);
+      // Session exists but webhook URL doesn't match - use existing session for this URL if available
+      const existingSession = getMostRecentSession(webhookUrl);
+      const sessionToUse = existingSession
+        ? existingSession.sessionId
+        : initialSessionId;
 
-      const queryString = searchParams.toString();
-      router.replace(`/${newSessionId}${queryString ? `?${queryString}` : ''}`);
+      if (sessionToUse !== initialSessionId) {
+        const queryString = searchParams.toString();
+        router.replace(
+          `/${sessionToUse}${queryString ? `?${queryString}` : ''}`,
+        );
+      }
 
-      setReadySessionId(newSessionId);
+      setReadySessionId(sessionToUse);
     } else if (!existingWebhookUrl) {
       setSession(webhookUrl, initialSessionId);
       setReadySessionId(initialSessionId);
@@ -73,7 +85,7 @@ export default function Chat({
   }, [
     initialSessionId,
     webhookUrl,
-    getSessionId,
+    getMostRecentSession,
     getWebhookBySessionId,
     setSession,
     searchParams,

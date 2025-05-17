@@ -7,7 +7,7 @@ export default function ChatRedirectPage() {
   const searchParams = useSearchParams();
   const webhookUrl = searchParams.get('webhookUrl');
   const id = searchParams.get('id');
-  const { createSession } = useChatStore();
+  const { getSessionId, getMostRecentSession } = useChatStore();
 
   let url: string = '';
 
@@ -22,7 +22,10 @@ export default function ChatRedirectPage() {
     notFound();
   }
 
-  const newSessionId = createSession(url);
+  const existingSession = getMostRecentSession(url);
+  const sessionId = existingSession
+    ? existingSession.sessionId
+    : getSessionId(url);
 
-  redirect(`/${newSessionId}?webhookUrl=${url}`);
+  redirect(`/${sessionId}?webhookUrl=${url}`);
 }

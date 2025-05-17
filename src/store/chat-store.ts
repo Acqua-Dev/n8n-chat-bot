@@ -46,6 +46,11 @@ export const useChatStore = create<ChatStore>()(
           return mostRecent.sessionId;
         }
 
+        const allSessions = get().sessions[webhookUrl];
+        if (allSessions && allSessions.length > 0) {
+          return allSessions[0].sessionId;
+        }
+
         return get().createSession(webhookUrl);
       },
 
@@ -55,16 +60,6 @@ export const useChatStore = create<ChatStore>()(
       },
 
       createSession: (webhookUrl: string) => {
-        // Debug: Check what's being passed as webhookUrl
-        if (typeof webhookUrl !== 'string') {
-          console.error(
-            'Invalid webhookUrl type:',
-            typeof webhookUrl,
-            webhookUrl,
-          );
-          throw new Error('webhookUrl must be a string');
-        }
-
         const newSessionId = uuidv4();
         const now = new Date().toISOString();
 
