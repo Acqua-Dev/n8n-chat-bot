@@ -77,15 +77,27 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
   const searchParams = useSearchParams();
   const params = useParams();
   const currentSessionId = params.sessionId as string;
+  const webhookUrlParam = searchParams.get('webhookUrl');
+  const idParam = searchParams.get('id');
+  const currentWebhookUrl =
+    webhookUrlParam ||
+    (idParam
+      ? `${process.env.NEXT_PUBLIC_N8N_BASE_URL}/webhook/${idParam}/chat`
+      : '');
 
-  const { getAllSessions, deleteSession, createSession } = useChatStore();
+  const { getAllSessions, getSessionsByWebhook, deleteSession, createSession } =
+    useChatStore();
 
   useEffect(() => {
     useChatStore.persist.rehydrate();
     setHasHydrated(true);
   }, []);
 
-  const sessions = hasHydrated ? getAllSessions() : [];
+  const sessions = hasHydrated
+    ? currentWebhookUrl
+      ? getSessionsByWebhook(currentWebhookUrl)
+      : getAllSessions()
+    : [];
 
   const handleSessionClick = (sessionId: string) => {
     const queryString = searchParams.toString();
@@ -99,7 +111,8 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
       url = undefined;
     }
 
-    const webhookUrl = url || sessions[0]?.webhookUrl || '';
+    const webhookUrl =
+      url || currentWebhookUrl || sessions[0]?.webhookUrl || '';
 
     if (!webhookUrl || typeof webhookUrl !== 'string') {
       console.error('No valid webhook URL available for new chat');
@@ -108,7 +121,11 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
 
     try {
       const newSessionId = createSession(webhookUrl);
-      router.push(`/${newSessionId}?webhookUrl=${webhookUrl}`);
+      const queryParams = new URLSearchParams(searchParams.toString());
+      if (!queryParams.has('webhookUrl') && webhookUrl) {
+        queryParams.set('webhookUrl', webhookUrl);
+      }
+      router.push(`/${newSessionId}?${queryParams.toString()}`);
     } catch (error) {
       console.error('Error creating new session:', error);
     }
@@ -223,7 +240,8 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
 
           <SidebarFooter className="border-t p-4">
             <div className="text-xs text-muted-foreground text-center">
-              {sessions.length} conversation{sessions.length !== 1 ? 's' : ''}
+              {sessions.length} conversation{sessions.length !== 1 ? 's' : ''}{' '}
+              for this webhook
             </div>
           </SidebarFooter>
         </Sidebar>

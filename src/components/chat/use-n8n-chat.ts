@@ -22,18 +22,17 @@ export function useN8nChat(
     updateSession,
     clearSession: clearStoreSession,
   } = useChatStore();
-  const [sessionId, setSessionId] = useState<string>(() => {
-    if (providedSessionId) {
-      return providedSessionId;
-    }
-    return getSessionId(webhookUrl);
-  });
+  const [sessionId, setSessionId] = useState<string>(providedSessionId || '');
 
   useEffect(() => {
     if (providedSessionId) {
       setSessionId(providedSessionId);
+    } else if (!sessionId && webhookUrl) {
+      // Get or create session only in effect, not during render
+      const newSessionId = getSessionId(webhookUrl);
+      setSessionId(newSessionId);
     }
-  }, [providedSessionId]);
+  }, [providedSessionId, webhookUrl, sessionId, getSessionId]);
 
   const loadPreviousSession = useCallback(async (): Promise<ChatMessage[]> => {
     if (!webhookUrl || !sessionId) {
