@@ -275,7 +275,7 @@ export default function Chat({
             </div>
           )}
 
-          <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto pb-20">
             <ChatMessages
               messages={messages}
               isLoading={isLoading}
@@ -285,7 +285,7 @@ export default function Chat({
             />
           </div>
 
-          <div className="flex-shrink-0">
+          <div className="chat-input-container">
             <ChatInput
               onSubmit={handleSubmit}
               isLoading={isLoading}
@@ -321,7 +321,7 @@ export default function Chat({
           {renderChatContent()}
         </ChatWindow>
       ) : (
-        <div className="flex flex-col h-full overflow-hidden w-full relative">
+        <div className="flex flex-col h-full overflow-hidden w-full relative pb-[80px] sm:pb-0">
           {renderChatContent()}
         </div>
       )}

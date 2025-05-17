@@ -220,13 +220,40 @@
     @apply bg-background text-foreground;
   }
   
-  /* Mobile-specific fixes for Chrome */
+  /* Mobile-specific fixes for Chrome and Samsung Internet */
   @media (max-width: 768px) {
     html {
       height: -webkit-fill-available;
+      height: -moz-available;
+      height: fill-available;
     }
     body {
       min-height: -webkit-fill-available;
+      min-height: -moz-available;
+      min-height: fill-available;
+    }
+    
+    /* Fix for mobile keyboard */
+    .chat-input-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--background);
+      z-index: 50;
+      border-top: 1px solid var(--border);
+    }
+  }
+  
+  /* Desktop styling */
+  @media (min-width: 769px) {
+    .chat-input-container {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--background);
+      border-top: 1px solid var(--border);
     }
   }
 }
