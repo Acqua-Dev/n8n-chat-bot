@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useChatStore } from '@/store/chat-store';
 import { Button } from '@/components/ui/button';
+import { useScopedI18n } from '@/utils/localization/client';
 import {
   Sidebar,
   SidebarContent,
@@ -76,6 +77,7 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
   const searchParams = useSearchParams();
   const params = useParams();
   const currentSessionId = params.sessionId as string;
+  const t = useScopedI18n('chat');
   const webhookUrlParam = searchParams.get('webhookUrl');
   const idParam = searchParams.get('id');
   const currentWebhookUrl =
@@ -162,7 +164,7 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
         (session.lastMessage.length > 20 ? '...' : '')
       );
     }
-    return 'New Chat';
+    return t('sidebar.newChat');
   };
 
   return (
@@ -178,7 +180,7 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
                   width="24"
                   height="24"
                 />
-                <span className="font-semibold">Chat History</span>
+                <span className="font-semibold">{t('sidebar.title')}</span>
               </div>
               <Button
                 variant="ghost"
@@ -229,7 +231,7 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
                         className="text-destructive"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                        {t('sidebar.delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -240,8 +242,11 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
 
           <SidebarFooter className="border-t p-4">
             <div className="text-xs text-muted-foreground text-center">
-              {sessions.length} conversation{sessions.length !== 1 ? 's' : ''}{' '}
-              for this webhook
+              {sessions.length}{' '}
+              {sessions.length !== 1
+                ? t('sidebar.conversationsPlural')
+                : t('sidebar.conversations')}{' '}
+              {t('sidebar.forThisWebhook')}
             </div>
           </SidebarFooter>
         </Sidebar>
