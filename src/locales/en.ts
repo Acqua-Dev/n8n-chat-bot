@@ -257,6 +257,14 @@ export default {
         'Example URL: https://n8n.example.com/webhook/your-workflow-id/chat',
       changeUrlButton: 'Change URL',
     },
+    sidebar: {
+      title: 'Chat History',
+      newChat: 'New Chat',
+      delete: 'Delete',
+      conversations: 'conversation',
+      conversationsPlural: 'conversations',
+      forThisWebhook: 'for this webhook',
+    },
   },
   i18n: {
     direct: {

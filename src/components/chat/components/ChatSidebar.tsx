@@ -106,12 +106,6 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
   };
 
   const handleNewChat = (url?: string) => {
-    // Make sure we handle event objects being passed
-    if (url && typeof url !== 'string') {
-      console.error('Invalid URL passed to handleNewChat:', url);
-      url = undefined;
-    }
-
     const webhookUrl =
       url || currentWebhookUrl || sessions[0]?.webhookUrl || '';
 
