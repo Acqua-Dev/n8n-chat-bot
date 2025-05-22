@@ -4,7 +4,6 @@ import { ReactNode, useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useChatStore } from '@/store/chat-store';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sidebar,
   SidebarContent,
@@ -159,8 +158,8 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
     if (session.title) return session.title;
     if (session.lastMessage) {
       return (
-        session.lastMessage.slice(0, 30) +
-        (session.lastMessage.length > 30 ? '...' : '')
+        session.lastMessage.slice(0, 20) +
+        (session.lastMessage.length > 20 ? '...' : '')
       );
     }
     return 'New Chat';
@@ -193,54 +192,50 @@ export default function ChatSidebar({ children }: ChatSidebarProps) {
           </SidebarHeader>
 
           <SidebarContent>
-            <ScrollArea className="h-full">
-              <SidebarMenu className="p-2">
-                {sessions.map((session) => (
-                  <SidebarMenuItem key={session.sessionId}>
-                    <SidebarMenuButton
-                      className={cn(
-                        'w-full',
-                        currentSessionId === session.sessionId
-                          ? 'bg-muted'
-                          : '',
-                      )}
-                      onClick={() => handleSessionClick(session.sessionId)}
-                    >
-                      <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                      <span className="flex-1 min-w-0 flex flex-col text-left overflow-hidden">
-                        <span className="truncate max-w-2/3">
-                          {getSessionTitle(session)}
-                        </span>
-                        <span className="text-xs text-muted-foreground truncate">
-                          {formatDistanceToNow(new Date(session.updatedAt), {
-                            addSuffix: true,
-                          })}
-                        </span>
-                      </span>
-                    </SidebarMenuButton>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <SidebarMenuAction>
-                          <MoreHorizontal className="h-3 w-3" />
-                        </SidebarMenuAction>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteSession(session.sessionId);
-                          }}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </ScrollArea>
+            <SidebarMenu className="p-2">
+              {sessions.map((session) => (
+                <SidebarMenuItem key={session.sessionId}>
+                  <SidebarMenuButton
+                    className={cn(
+                      'pr-8',
+                      currentSessionId === session.sessionId ? 'bg-muted' : '',
+                    )}
+                    onClick={() => handleSessionClick(session.sessionId)}
+                  >
+                    <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <div className="truncate text-sm">
+                        {getSessionTitle(session)}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {formatDistanceToNow(new Date(session.updatedAt), {
+                          addSuffix: true,
+                        })}
+                      </div>
+                    </div>
+                  </SidebarMenuButton>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <SidebarMenuAction>
+                        <MoreHorizontal className="h-3 w-3" />
+                      </SidebarMenuAction>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSession(session.sessionId);
+                        }}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarContent>
 
           <SidebarFooter className="border-t p-4">
